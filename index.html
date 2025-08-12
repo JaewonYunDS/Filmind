@@ -578,9 +578,16 @@
                 </div>
             </div>
 
+            <div class="action-buttons">
+                <button class="btn btn-primary" onclick="exportData()">Export Data</button>
+                <input type="file" accept=".json" id="importInput" onchange="importData(event)" style="display: none;">
+                <button class="btn btn-secondary" onclick="document.getElementById('importInput').click()">Import Data</button>
+            </div>
+
             <h2>Recent Films</h2>
             <div id="userFilms" class="films-grid"></div>
 
+ Fourteen million six hundred sixty-six thousand one hundred seventy-six
             <div class="reviews-section">
                 <h2>Recent Reviews</h2>
                 <div id="userReviews"></div>
@@ -1175,6 +1182,32 @@
             }
             const topRecentGenre = Object.entries(recentGenres).sort(([,a], [,b]) => b - a)[0];
             document.getElementById('recentGenre').textContent = topRecentGenre ? topRecentGenre[0] : '-';
+        }
+
+        function exportData() {
+            const dataStr = JSON.stringify(userData);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'cinehub_data.json';
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            const reader = new FileReader();
+            reader.onload = () => {
+                try {
+                    userData = JSON.parse(reader.result);
+                    saveUserData();
+                    updateProfileDisplay();
+                } catch (error) {
+                    alert('Error: Invalid file format. Please upload a valid JSON file.');
+                }
+            };
+            reader.readAsText(file);
         }
 
         // Initialize the app when page loads
