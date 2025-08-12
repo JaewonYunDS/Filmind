@@ -38,6 +38,7 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            cursor: pointer;
         }
 
         .nav-links {
@@ -202,6 +203,21 @@
             margin-bottom: 2rem;
         }
 
+        .movie-cast, .movie-staff {
+            margin-top: 2rem;
+        }
+
+        .movie-cast h3, .movie-staff h3 {
+            font-size: 1.3rem;
+            margin-bottom: 0.8rem;
+            color: #667eea;
+        }
+
+        .movie-cast p, .movie-staff p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
         .action-buttons {
             display: flex;
             gap: 1rem;
@@ -301,6 +317,7 @@
             font-size: 3rem;
             color: white;
             margin: 0 auto 1rem;
+            object-fit: cover;
         }
 
         .profile-stats {
@@ -453,6 +470,34 @@
             font-weight: bold;
         }
 
+        .edit-profile-form {
+            background: #f8f9ff;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-top: 1rem;
+        }
+
+        .edit-profile-form input, .edit-profile-form textarea {
+            width: 100%;
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .top-rated-films {
+            margin-top: 3rem;
+        }
+
+        .top-rated-films .films-grid {
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        }
+
+        .top-rated-films .film-card .rating {
+            font-size: 1rem;
+            margin-top: 0.5rem;
+        }
+
         @media (max-width: 768px) {
             .movie-header {
                 flex-direction: column;
@@ -481,7 +526,7 @@
 </head>
 <body>
     <nav class="navbar">
-        <div class="logo">CineHub</div>
+        <div class="logo" onclick="showPage('home')">CineHub</div>
         <div class="nav-links">
             <a href="#" onclick="showPage('home')" class="active">Home</a>
             <a href="#" onclick="showPage('profile')">Profile</a>
@@ -509,9 +554,17 @@
         <!-- Profile Page -->
         <div id="profile-page" class="page">
             <div class="profile-header">
-                <div class="profile-avatar">CU</div>
-                <h2>CineUser</h2>
-                <p>Film enthusiast and data lover</p>
+                <img id="profilePhoto" class="profile-avatar" src="" alt="Profile Photo" onerror="this.src=''; this.style.background='linear-gradient(135deg, #667eea, #764ba2)'; this.textContent='CU';">
+                <h2 id="profileName">CineUser</h2>
+                <p id="profileBio">Film enthusiast and data lover</p>
+                <button class="btn btn-secondary" onclick="toggleEditProfileForm()">Edit Profile</button>
+                <div id="editProfileForm" class="edit-profile-form hidden">
+                    <input type="text" id="editName" placeholder="Name">
+                    <textarea id="editBio" placeholder="Bio"></textarea>
+                    <input type="file" id="editPhoto" accept="image/*">
+                    <button class="btn btn-primary" onclick="saveProfile()">Save</button>
+                    <button class="btn btn-secondary" onclick="toggleEditProfileForm()">Cancel</button>
+                </div>
                 <div class="profile-stats">
                     <div class="stat">
                         <div class="stat-number" id="filmCount">0</div>
@@ -555,6 +608,16 @@
                         <h3>Runtime Distribution</h3>
                         <canvas id="runtimeChart"></canvas>
                     </div>
+
+                    <div class="chart-container">
+                        <h3>Average Rating by Genre</h3>
+                        <canvas id="avgRatingGenreChart"></canvas>
+                    </div>
+
+                    <div class="chart-container">
+                        <h3>Most Watched Directors</h3>
+                        <canvas id="directorFrequencyChart"></canvas>
+                    </div>
                 </div>
 
                 <!-- Additional Stats Cards -->
@@ -578,6 +641,11 @@
                 </div>
             </div>
 
+            <div class="top-rated-films">
+                <h2>Top 10 Highest Rated Films</h2>
+                <div id="topRatedFilms" class="films-grid"></div>
+            </div>
+
             <div class="action-buttons">
                 <button class="btn btn-primary" onclick="exportData()">Export Data</button>
                 <input type="file" accept=".json" id="importInput" onchange="importData(event)" style="display: none;">
@@ -587,7 +655,6 @@
             <h2>Recent Films</h2>
             <div id="userFilms" class="films-grid"></div>
 
- Fourteen million six hundred sixty-six thousand one hundred seventy-six
             <div class="reviews-section">
                 <h2>Recent Reviews</h2>
                 <div id="userReviews"></div>
@@ -604,6 +671,9 @@
 
         // User data storage
         let userData = {
+            name: 'CineUser',
+            bio: 'Film enthusiast and data lover',
+            profilePhoto: '',
             watchedFilms: [],
             reviews: []
         };
@@ -630,6 +700,7 @@
         // Initialize the app
         function init() {
             loadUserData();
+            updateProfileHeader();
             updateProfileDisplay();
         }
 
@@ -642,7 +713,7 @@
             document.querySelectorAll('.nav-links a').forEach(link => {
                 link.classList.remove('active');
             });
-            event.target.classList.add('active');
+            if (event) event.target.classList.add('active');
             if (pageId === 'profile') {
                 updateProfileDisplay();
             }
@@ -717,7 +788,11 @@
                     runtime: movie.runtime || 0,
                     rating: movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A',
                     poster: movie.poster_path ? TMDB_IMAGE_BASE_URL + movie.poster_path : '',
-                    overview: movie.overview || 'No overview available.'
+                    overview: movie.overview || 'No overview available.',
+                    credits: {
+                        cast: movie.credits?.cast || [],
+                        crew: movie.credits?.crew || []
+                    }
                 };
                 movieCache[movieId] = formattedMovie;
                 return formattedMovie;
@@ -741,6 +816,14 @@
 
             const isWatched = userData.watchedFilms.some(f => f.id === movieId);
             const userReview = userData.reviews.find(r => r.movieId === movieId);
+
+            // Get top 5 actors
+            const actors = movie.credits?.cast?.slice(0, 5).map(actor => actor.name).join(', ') || 'Unknown';
+
+            // Get key staff
+            const producers = movie.credits?.crew?.filter(member => member.job === 'Producer').map(p => p.name).join(', ') || 'Unknown';
+            const cinematographer = movie.credits?.crew?.find(member => member.job === 'Director of Photography')?.name || 'Unknown';
+            const editor = movie.credits?.crew?.find(member => member.job === 'Editor')?.name || 'Unknown';
 
             const movieHtml = `
                 <div class="movie-header">
@@ -777,8 +860,18 @@
                     </div>
                 </div>
                 <div class="movie-overview">
-                    <h3>Overview</h3>
+                    <h3>Synopsis</h3>
                     <p>${movie.overview}</p>
+                </div>
+                <div class="movie-cast">
+                    <h3>Cast</h3>
+                    <p>${actors}</p>
+                </div>
+                <div class="movie-staff">
+                    <h3>Key Staff</h3>
+                    <p><strong>Producers:</strong> ${producers}</p>
+                    <p><strong>Cinematographer:</strong> ${cinematographer}</p>
+                    <p><strong>Editor:</strong> ${editor}</p>
                 </div>
             `;
 
@@ -877,7 +970,6 @@
                 document.getElementById('avgRating').textContent = '0.0';
             }
 
-            // Calculate total runtime
             let totalMinutes = 0;
             userData.watchedFilms.forEach(async film => {
                 const movie = await fetchMovieDetails(film.id);
@@ -887,10 +979,54 @@
             });
         }
 
+        function updateProfileHeader() {
+            document.getElementById('profileName').textContent = userData.name || 'CineUser';
+            document.getElementById('profileBio').textContent = userData.bio || 'Film enthusiast and data lover';
+            const photoElem = document.getElementById('profilePhoto');
+            if (userData.profilePhoto) {
+                photoElem.src = userData.profilePhoto;
+                photoElem.style.background = 'none';
+                photoElem.textContent = '';
+            } else {
+                photoElem.src = '';
+                photoElem.style.background = 'linear-gradient(135deg, #667eea, #764ba2)';
+                photoElem.textContent = 'CU';
+            }
+        }
+
+        function toggleEditProfileForm() {
+            const form = document.getElementById('editProfileForm');
+            form.classList.toggle('hidden');
+            if (!form.classList.contains('hidden')) {
+                document.getElementById('editName').value = userData.name || '';
+                document.getElementById('editBio').value = userData.bio || '';
+            }
+        }
+
+        function saveProfile() {
+            userData.name = document.getElementById('editName').value.trim();
+            userData.bio = document.getElementById('editBio').value.trim();
+            const photoInput = document.getElementById('editPhoto');
+            if (photoInput.files.length > 0) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    userData.profilePhoto = e.target.result;
+                    saveUserData();
+                    updateProfileHeader();
+                };
+                reader.readAsDataURL(photoInput.files[0]);
+            } else {
+                saveUserData();
+                updateProfileHeader();
+            }
+            toggleEditProfileForm();
+        }
+
         function updateProfileDisplay() {
             updateProfileStats();
             displayUserFilms();
             displayUserReviews();
+            displayTopRatedFilms();
             generateDataVisualizations();
         }
 
@@ -938,6 +1074,27 @@
             reviewsContainer.innerHTML = html;
         }
 
+        async function displayTopRatedFilms() {
+            const topRatedContainer = document.getElementById('topRatedFilms');
+
+            if (userData.reviews.length === 0) {
+                topRatedContainer.innerHTML = '<p style="text-align: center; color: #666;">No rated films yet.</p>';
+                return;
+            }
+
+            const sortedReviews = userData.reviews.sort((a, b) => b.rating - a.rating).slice(0, 10);
+
+            const html = sortedReviews.map(review => `
+                <div class="film-card" onclick="showMovieDetail(${review.movieId})">
+                    <img src="${review.poster}" alt="${review.title}" onerror="this.style.display='none'">
+                    <h4>${review.title}</h4>
+                    <p class="rating">${'★'.repeat(review.rating)}</p>
+                </div>
+            `).join('');
+
+            topRatedContainer.innerHTML = html;
+        }
+
         // Data Visualization Functions
         let charts = {};
 
@@ -950,6 +1107,8 @@
             generateRatingChart();
             await generateDecadeChart();
             await generateRuntimeChart();
+            await generateAvgRatingGenreChart();
+            await generateDirectorFrequencyChart();
             await updateStatsCards();
         }
 
@@ -1144,6 +1303,100 @@
             });
         }
 
+        async function generateAvgRatingGenreChart() {
+            const genreRatings = {};
+
+            for (const review of userData.reviews) {
+                const movie = await fetchMovieDetails(review.movieId);
+                if (movie) {
+                    movie.genre.forEach(genre => {
+                        if (!genreRatings[genre]) genreRatings[genre] = { sum: 0, count: 0 };
+                        genreRatings[genre].sum += review.rating;
+                        genreRatings[genre].count++;
+                    });
+                }
+            }
+
+            const sortedGenres = Object.entries(genreRatings)
+                .map(([genre, data]) => [genre, data.sum / data.count])
+                .sort(([,a], [,b]) => b - a)
+                .slice(0, 10);
+
+            if (charts.avgRatingGenre) charts.avgRatingGenre.destroy();
+
+            const ctx = document.getElementById('avgRatingGenreChart').getContext('2d');
+            charts.avgRatingGenre = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: sortedGenres.map(([genre]) => genre),
+                    datasets: [{
+                        label: 'Average Rating',
+                        data: sortedGenres.map(([, avg]) => avg),
+                        backgroundColor: '#667eea',
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 5,
+                            ticks: { stepSize: 1 }
+                        }
+                    }
+                }
+            });
+        }
+
+        async function generateDirectorFrequencyChart() {
+            const directorCount = {};
+
+            for (const film of userData.watchedFilms) {
+                const movie = await fetchMovieDetails(film.id);
+                if (movie && movie.director !== 'Unknown') {
+                    directorCount[movie.director] = (directorCount[movie.director] || 0) + 1;
+                }
+            }
+
+            const sortedDirectors = Object.entries(directorCount)
+                .sort(([,a], [,b]) => b - a)
+                .slice(0, 10);
+
+            if (charts.directorFrequency) charts.directorFrequency.destroy();
+
+            const ctx = document.getElementById('directorFrequencyChart').getContext('2d');
+            charts.directorFrequency = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: sortedDirectors.map(([director]) => director),
+                    datasets: [{
+                        label: 'Films Watched',
+                        data: sortedDirectors.map(([, count]) => count),
+                        backgroundColor: '#764ba2',
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { stepSize: 1 }
+                        }
+                    }
+                }
+            });
+        }
+
         async function updateStatsCards() {
             let totalRuntime = 0;
             let count = 0;
@@ -1202,6 +1455,7 @@
                 try {
                     userData = JSON.parse(reader.result);
                     saveUserData();
+                    updateProfileHeader();
                     updateProfileDisplay();
                 } catch (error) {
                     alert('Error: Invalid file format. Please upload a valid JSON file.');
