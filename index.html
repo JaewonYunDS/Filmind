@@ -1,0 +1,1184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CineHub - Social Movie Database</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            color: #667eea;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .page {
+            display: none;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .search-section {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .search-section h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .search-section p {
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 2rem;
+        }
+
+        .search-container {
+            position: relative;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .search-bar {
+            width: 100%;
+            padding: 1rem 1.5rem;
+            font-size: 1.1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 50px;
+            outline: none;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .search-bar:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.2);
+        }
+
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            max-height: 400px;
+            overflow-y: auto;
+            z-index: 1000;
+            margin-top: 0.5rem;
+        }
+
+        .search-result {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .search-result:hover {
+            background: #f8f9ff;
+        }
+
+        .search-result img {
+            width: 50px;
+            height: 75px;
+            object-fit: cover;
+            border-radius: 5px;
+            margin-right: 1rem;
+            background: #f0f0f0;
+        }
+
+        .search-result-info h4 {
+            font-size: 1.1rem;
+            margin-bottom: 0.2rem;
+        }
+
+        .search-result-info p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .movie-header {
+            display: flex;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .movie-poster {
+            width: 300px;
+            height: 450px;
+            object-fit: cover;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .movie-info h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .movie-meta {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+            color: #666;
+        }
+
+        .rating-stars {
+            color: #ffd700;
+            font-size: 1.5rem;
+        }
+
+        .movie-overview {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 2rem;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .btn {
+            padding: 0.8rem 2rem;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+        .btn-secondary:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .review-section {
+            margin-top: 2rem;
+        }
+
+        .review-form {
+            background: #f8f9ff;
+            padding: 2rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+        }
+
+        .rating-input {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            align-items: center;
+        }
+
+        .star-rating {
+            display: flex;
+            gap: 0.2rem;
+        }
+
+        .star-rating span {
+            font-size: 2rem;
+            color: #ddd;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .star-rating span:hover,
+        .star-rating span.active {
+            color: #ffd700;
+        }
+
+        .review-textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            resize: vertical;
+            margin-bottom: 1rem;
+        }
+
+        .profile-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: white;
+            margin: 0 auto 1rem;
+        }
+
+        .profile-stats {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            color: #666;
+        }
+
+        .films-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .film-card {
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .film-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .film-card img {
+            width: 100%;
+            height: 225px;
+            object-fit: cover;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            margin-bottom: 0.5rem;
+        }
+
+        .film-card h4 {
+            font-size: 0.9rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .film-card .rating {
+            color: #ffd700;
+        }
+
+        .reviews-section h2 {
+            margin-bottom: 1.5rem;
+        }
+
+        .review-card {
+            background: #f8f9ff;
+            padding: 1.5rem;
+            border-radius: 15px;
+            margin-bottom: 1.5rem;
+        }
+
+        .review-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .review-movie-poster {
+            width: 50px;
+            height: 75px;
+            object-fit: cover;
+            border-radius: 5px;
+        }
+
+        .review-info h4 {
+            margin-bottom: 0.3rem;
+        }
+
+        .review-date {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Data Visualization Styles */
+        .data-viz-section {
+            margin-bottom: 3rem;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .chart-container {
+            background: #f8f9ff;
+            padding: 1.5rem;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .chart-container h3 {
+            margin-bottom: 1rem;
+            color: #667eea;
+            font-size: 1.1rem;
+        }
+
+        .chart-container canvas {
+            max-height: 250px;
+        }
+
+        .stats-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .stat-card h4 {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .big-number {
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .movie-header {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+
+            .movie-poster {
+                width: 250px;
+                height: 375px;
+            }
+
+            .films-grid {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            }
+
+            .profile-stats {
+                gap: 2rem;
+            }
+
+            .container {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">CineHub</div>
+        <div class="nav-links">
+            <a href="#" onclick="showPage('home')" class="active">Home</a>
+            <a href="#" onclick="showPage('profile')">Profile</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Home Page -->
+        <div id="home-page" class="page active">
+            <div class="search-section">
+                <h1>Discover Movies</h1>
+                <p>Search, log, review, and discuss your favorite films</p>
+                <div class="search-container">
+                    <input type="text" class="search-bar" placeholder="Search for movies..." id="searchInput" autocomplete="off">
+                    <div id="searchResults" class="search-results hidden"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Movie Detail Page -->
+        <div id="movie-page" class="page">
+            <div id="movieContent"></div>
+        </div>
+
+        <!-- Profile Page -->
+        <div id="profile-page" class="page">
+            <div class="profile-header">
+                <div class="profile-avatar">CU</div>
+                <h2>CineUser</h2>
+                <p>Film enthusiast and data lover</p>
+                <div class="profile-stats">
+                    <div class="stat">
+                        <div class="stat-number" id="filmCount">0</div>
+                        <div class="stat-label">Films Watched</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number" id="reviewCount">0</div>
+                        <div class="stat-label">Reviews</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number" id="avgRating">0.0</div>
+                        <div class="stat-label">Avg Rating</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number" id="totalRuntime">0h</div>
+                        <div class="stat-label">Total Runtime</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Data Visualizations Section -->
+            <div class="data-viz-section">
+                <h2>Your Viewing Analytics</h2>
+                <div class="charts-grid">
+                    <div class="chart-container">
+                        <h3>Top Genres</h3>
+                        <canvas id="genreChart"></canvas>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <h3>Rating Distribution</h3>
+                        <canvas id="ratingChart"></canvas>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <h3>Movies by Decade</h3>
+                        <canvas id="decadeChart"></canvas>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <h3>Runtime Distribution</h3>
+                        <canvas id="runtimeChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Additional Stats Cards -->
+                <div class="stats-cards">
+                    <div class="stat-card">
+                        <h4>Average Film Length</h4>
+                        <div class="big-number" id="avgRuntime">0 min</div>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Most Watched Director</h4>
+                        <div class="big-number" id="topDirector">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Oldest Film Watched</h4>
+                        <div class="big-number" id="oldestFilm">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Most Recent Genre</h4>
+                        <div class="big-number" id="recentGenre">-</div>
+                    </div>
+                </div>
+            </div>
+
+            <h2>Recent Films</h2>
+            <div id="userFilms" class="films-grid"></div>
+
+            <div class="reviews-section">
+                <h2>Recent Reviews</h2>
+                <div id="userReviews"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script>
+        // TMDB API Configuration
+        const TMDB_API_KEY = '7d0f1f2036d4dc0188fb3dcd12c945a2';
+        const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
+        const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
+
+        // User data storage
+        let userData = {
+            watchedFilms: [],
+            reviews: []
+        };
+
+        // Cache for movie details to reduce API calls
+        let movieCache = {};
+
+        // Load user data from localStorage
+        function loadUserData() {
+            const saved = localStorage?.getItem('cineHubUserData');
+            if (saved) {
+                userData = JSON.parse(saved);
+            }
+            updateProfileStats();
+        }
+
+        // Save user data to localStorage
+        function saveUserData() {
+            if (typeof localStorage !== 'undefined') {
+                localStorage.setItem('cineHubUserData', JSON.stringify(userData));
+            }
+        }
+
+        // Initialize the app
+        function init() {
+            loadUserData();
+            updateProfileDisplay();
+        }
+
+        // Page navigation
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            document.getElementById(pageId + '-page').classList.add('active');
+            document.querySelectorAll('.nav-links a').forEach(link => {
+                link.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            if (pageId === 'profile') {
+                updateProfileDisplay();
+            }
+        }
+
+        // Search functionality with TMDB API
+        const searchInput = document.getElementById('searchInput');
+        const searchResults = document.getElementById('searchResults');
+
+        searchInput.addEventListener('input', async function(e) {
+            const query = e.target.value.trim();
+            if (query.length < 2) {
+                searchResults.classList.add('hidden');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${TMDB_BASE_URL}/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}`);
+                const data = await response.json();
+                const results = data.results.slice(0, 5);
+                displaySearchResults(results);
+            } catch (error) {
+                console.error('Error fetching search results:', error);
+                searchResults.innerHTML = '<p style="padding: 1rem; color: #666;">Error fetching results. Please try again.</p>';
+                searchResults.classList.remove('hidden');
+            }
+        });
+
+        function displaySearchResults(results) {
+            if (results.length === 0) {
+                searchResults.innerHTML = '<p style="padding: 1rem; color: #666;">No results found.</p>';
+                searchResults.classList.remove('hidden');
+                return;
+            }
+
+            const html = results.map(movie => `
+                <div class="search-result" onclick="showMovieDetail(${movie.id})">
+                    <img src="${movie.poster_path ? TMDB_IMAGE_BASE_URL + movie.poster_path : ''}" alt="${movie.title}" onerror="this.style.display='none'">
+                    <div class="search-result-info">
+                        <h4>${movie.title}</h4>
+                        <p>${movie.release_date ? movie.release_date.split('-')[0] : 'N/A'}</p>
+                    </div>
+                </div>
+            `).join('');
+
+            searchResults.innerHTML = html;
+            searchResults.classList.remove('hidden');
+        }
+
+        // Hide search results when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+                searchResults.classList.add('hidden');
+            }
+        });
+
+        // Fetch movie details from TMDB
+        async function fetchMovieDetails(movieId) {
+            if (movieCache[movieId]) {
+                return movieCache[movieId];
+            }
+
+            try {
+                const response = await fetch(`${TMDB_BASE_URL}/movie/${movieId}?api_key=${TMDB_API_KEY}&append_to_response=credits`);
+                const movie = await response.json();
+                const formattedMovie = {
+                    id: movie.id,
+                    title: movie.title,
+                    year: movie.release_date ? parseInt(movie.release_date.split('-')[0]) : 'N/A',
+                    director: movie.credits?.crew?.find(member => member.job === 'Director')?.name || 'Unknown',
+                    genre: movie.genres.map(genre => genre.name),
+                    runtime: movie.runtime || 0,
+                    rating: movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A',
+                    poster: movie.poster_path ? TMDB_IMAGE_BASE_URL + movie.poster_path : '',
+                    overview: movie.overview || 'No overview available.'
+                };
+                movieCache[movieId] = formattedMovie;
+                return formattedMovie;
+            } catch (error) {
+                console.error('Error fetching movie details:', error);
+                return null;
+            }
+        }
+
+        // Movie detail functionality
+        async function showMovieDetail(movieId) {
+            const movie = await fetchMovieDetails(movieId);
+            if (!movie) {
+                document.getElementById('movieContent').innerHTML = '<p style="color: #666;">Error loading movie details.</p>';
+                showPage('movie');
+                return;
+            }
+
+            searchResults.classList.add('hidden');
+            searchInput.value = '';
+
+            const isWatched = userData.watchedFilms.some(f => f.id === movieId);
+            const userReview = userData.reviews.find(r => r.movieId === movieId);
+
+            const movieHtml = `
+                <div class="movie-header">
+                    <img src="${movie.poster}" alt="${movie.title}" class="movie-poster" onerror="this.style.display='none'">
+                    <div class="movie-info">
+                        <h1>${movie.title} (${movie.year})</h1>
+                        <div class="movie-meta">
+                            <span>Directed by ${movie.director}</span>
+                            <span>•</span>
+                            <span>${movie.runtime} min</span>
+                            <span>•</span>
+                            <span>${movie.genre.join(', ')}</span>
+                        </div>
+                        <div class="rating-stars">★★★★★ ${movie.rating}/10</div>
+                        <div class="action-buttons">
+                            <button class="btn btn-primary" onclick="toggleWatched(${movie.id})" id="watchBtn-${movie.id}">
+                                ${isWatched ? '✓ Watched' : '+ Add to Watched'}
+                            </button>
+                            <button class="btn btn-secondary" onclick="toggleReviewForm(${movie.id})">
+                                ${userReview ? 'Edit Review' : 'Write Review'}
+                            </button>
+                        </div>
+                        <div id="reviewForm-${movie.id}" class="review-form hidden">
+                            <div class="rating-input">
+                                <span>Your Rating:</span>
+                                <div class="star-rating" data-movie-id="${movie.id}">
+                                    ${[1,2,3,4,5].map(i => `<span onclick="setRating(${movie.id}, ${i})" data-rating="${i}">★</span>`).join('')}
+                                </div>
+                            </div>
+                            <textarea class="review-textarea" placeholder="Write your review..." id="reviewText-${movie.id}">${userReview ? userReview.text : ''}</textarea>
+                            <button class="btn btn-primary" onclick="saveReview(${movie.id})">Save Review</button>
+                            <button class="btn btn-secondary" onclick="toggleReviewForm(${movie.id})">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="movie-overview">
+                    <h3>Overview</h3>
+                    <p>${movie.overview}</p>
+                </div>
+            `;
+
+            document.getElementById('movieContent').innerHTML = movieHtml;
+
+            if (userReview) {
+                setRatingDisplay(movie.id, userReview.rating);
+            }
+
+            showPage('movie');
+        }
+
+        // Watch/Unwatch functionality
+        async function toggleWatched(movieId) {
+            const movie = await fetchMovieDetails(movieId);
+            const watchedIndex = userData.watchedFilms.findIndex(f => f.id === movieId);
+
+            if (watchedIndex === -1) {
+                userData.watchedFilms.push({
+                    id: movie.id,
+                    title: movie.title,
+                    year: movie.year,
+                    poster: movie.poster,
+                    watchedDate: new Date().toISOString()
+                });
+                document.getElementById(`watchBtn-${movieId}`).textContent = '✓ Watched';
+            } else {
+                userData.watchedFilms.splice(watchedIndex, 1);
+                document.getElementById(`watchBtn-${movieId}`).textContent = '+ Add to Watched';
+            }
+
+            saveUserData();
+            updateProfileStats();
+        }
+
+        // Review functionality
+        function toggleReviewForm(movieId) {
+            const form = document.getElementById(`reviewForm-${movieId}`);
+            form.classList.toggle('hidden');
+        }
+
+        function setRating(movieId, rating) {
+            setRatingDisplay(movieId, rating);
+        }
+
+        function setRatingDisplay(movieId, rating) {
+            const stars = document.querySelectorAll(`[data-movie-id="${movieId}"] span`);
+            stars.forEach((star, index) => {
+                star.classList.toggle('active', index < rating);
+            });
+        }
+
+        async function saveReview(movieId) {
+            const movie = await fetchMovieDetails(movieId);
+            const reviewText = document.getElementById(`reviewText-${movieId}`).value.trim();
+            const ratingStars = document.querySelectorAll(`[data-movie-id="${movieId}"] span.active`);
+            const rating = ratingStars.length;
+
+            if (rating === 0) {
+                alert('Please select a rating');
+                return;
+            }
+
+            userData.reviews = userData.reviews.filter(r => r.movieId !== movieId);
+
+            userData.reviews.unshift({
+                movieId: movieId,
+                title: movie.title,
+                year: movie.year,
+                poster: movie.poster,
+                rating: rating,
+                text: reviewText,
+                date: new Date().toISOString()
+            });
+
+            if (!userData.watchedFilms.some(f => f.id === movieId)) {
+                await toggleWatched(movieId);
+            }
+
+            toggleReviewForm(movieId);
+            saveUserData();
+            updateProfileStats();
+
+            document.querySelector(`button[onclick="toggleReviewForm(${movieId})"]`).textContent = 'Edit Review';
+        }
+
+        // Profile functionality
+        function updateProfileStats() {
+            document.getElementById('filmCount').textContent = userData.watchedFilms.length;
+            document.getElementById('reviewCount').textContent = userData.reviews.length;
+
+            if (userData.reviews.length > 0) {
+                const avgRating = userData.reviews.reduce((sum, review) => sum + review.rating, 0) / userData.reviews.length;
+                document.getElementById('avgRating').textContent = avgRating.toFixed(1);
+            } else {
+                document.getElementById('avgRating').textContent = '0.0';
+            }
+
+            // Calculate total runtime
+            let totalMinutes = 0;
+            userData.watchedFilms.forEach(async film => {
+                const movie = await fetchMovieDetails(film.id);
+                if (movie) totalMinutes += movie.runtime;
+                const hours = Math.floor(totalMinutes / 60);
+                document.getElementById('totalRuntime').textContent = `${hours}h`;
+            });
+        }
+
+        function updateProfileDisplay() {
+            updateProfileStats();
+            displayUserFilms();
+            displayUserReviews();
+            generateDataVisualizations();
+        }
+
+        function displayUserFilms() {
+            const filmsGrid = document.getElementById('userFilms');
+
+            if (userData.watchedFilms.length === 0) {
+                filmsGrid.innerHTML = '<p style="text-align: center; color: #666;">No films logged yet. Start by searching for movies!</p>';
+                return;
+            }
+
+            const html = userData.watchedFilms.slice(0, 12).map(film => `
+                <div class="film-card" onclick="showMovieDetail(${film.id})">
+                    <img src="${film.poster}" alt="${film.title}" onerror="this.style.display='none'">
+                    <h4>${film.title}</h4>
+                    <p>${film.year}</p>
+                </div>
+            `).join('');
+
+            filmsGrid.innerHTML = html;
+        }
+
+        function displayUserReviews() {
+            const reviewsContainer = document.getElementById('userReviews');
+
+            if (userData.reviews.length === 0) {
+                reviewsContainer.innerHTML = '<p style="color: #666;">No reviews yet. Watch some movies and share your thoughts!</p>';
+                return;
+            }
+
+            const html = userData.reviews.slice(0, 5).map(review => `
+                <div class="review-card">
+                    <div class="review-header">
+                        <img src="${review.poster}" alt="${review.title}" class="review-movie-poster" onerror="this.style.display='none'">
+                        <div class="review-info">
+                            <h4>${review.title} (${review.year})</h4>
+                            <div class="rating-stars">${'★'.repeat(review.rating)}${'☆'.repeat(5-review.rating)}</div>
+                            <div class="review-date">${new Date(review.date).toLocaleDateString()}</div>
+                        </div>
+                    </div>
+                    ${review.text ? `<p>${review.text}</p>` : ''}
+                </div>
+            `).join('');
+
+            reviewsContainer.innerHTML = html;
+        }
+
+        // Data Visualization Functions
+        let charts = {};
+
+        async function generateDataVisualizations() {
+            if (userData.watchedFilms.length === 0) {
+                return;
+            }
+
+            await generateGenreChart();
+            generateRatingChart();
+            await generateDecadeChart();
+            await generateRuntimeChart();
+            await updateStatsCards();
+        }
+
+        async function generateGenreChart() {
+            const genreCount = {};
+
+            for (const film of userData.watchedFilms) {
+                const movie = await fetchMovieDetails(film.id);
+                if (movie) {
+                    movie.genre.forEach(genre => {
+                        genreCount[genre] = (genreCount[genre] || 0) + 1;
+                    });
+                }
+            }
+
+            const sortedGenres = Object.entries(genreCount)
+                .sort(([,a], [,b]) => b - a)
+                .slice(0, 6);
+
+            if (charts.genre) charts.genre.destroy();
+
+            const ctx = document.getElementById('genreChart').getContext('2d');
+            charts.genre = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: sortedGenres.map(([genre]) => genre),
+                    datasets: [{
+                        data: sortedGenres.map(([, count]) => count),
+                        backgroundColor: [
+                            '#667eea', '#764ba2', '#f093fb', '#f5576c',
+                            '#4facfe', '#00f2fe', '#43e97b', '#38f9d7'
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                usePointStyle: true
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function generateRatingChart() {
+            const ratingCount = [0, 0, 0, 0, 0];
+
+            userData.reviews.forEach(review => {
+                ratingCount[review.rating - 1]++;
+            });
+
+            if (charts.rating) charts.rating.destroy();
+
+            const ctx = document.getElementById('ratingChart').getContext('2d');
+            charts.rating = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['★', '★★', '★★★', '★★★★', '★★★★★'],
+                    datasets: [{
+                        data: ratingCount,
+                        backgroundColor: '#667eea',
+                        borderRadius: 8,
+                        borderSkipped: false,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { stepSize: 1 }
+                        }
+                    }
+                }
+            });
+        }
+
+        async function generateDecadeChart() {
+            const decadeCount = {};
+
+            for (const film of userData.watchedFilms) {
+                const movie = await fetchMovieDetails(film.id);
+                if (movie && movie.year !== 'N/A') {
+                    const decade = Math.floor(movie.year / 10) * 10;
+                    const decadeLabel = `${decade}s`;
+                    decadeCount[decadeLabel] = (decadeCount[decadeLabel] || 0) + 1;
+                }
+            }
+
+            const sortedDecades = Object.entries(decadeCount).sort();
+
+            if (charts.decade) charts.decade.destroy();
+
+            const ctx = document.getElementById('decadeChart').getContext('2d');
+            charts.decade = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: sortedDecades.map(([decade]) => decade),
+                    datasets: [{
+                        label: 'Films Watched',
+                        data: sortedDecades.map(([, count]) => count),
+                        borderColor: '#764ba2',
+                        backgroundColor: 'rgba(118, 75, 162, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        borderWidth: 3,
+                        pointBackgroundColor: '#764ba2',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { stepSize: 1 }
+                        }
+                    }
+                }
+            });
+        }
+
+        async function generateRuntimeChart() {
+            const runtimeRanges = {
+                'Short (< 90 min)': 0,
+                'Standard (90-120 min)': 0,
+                'Long (120-150 min)': 0,
+                'Epic (150+ min)': 0
+            };
+
+            for (const film of userData.watchedFilms) {
+                const movie = await fetchMovieDetails(film.id);
+                if (movie) {
+                    if (movie.runtime < 90) runtimeRanges['Short (< 90 min)']++;
+                    else if (movie.runtime < 120) runtimeRanges['Standard (90-120 min)']++;
+                    else if (movie.runtime < 150) runtimeRanges['Long (120-150 min)']++;
+                    else runtimeRanges['Epic (150+ min)']++;
+                }
+            }
+
+            if (charts.runtime) charts.runtime.destroy();
+
+            const ctx = document.getElementById('runtimeChart').getContext('2d');
+            charts.runtime = new Chart(ctx, {
+                type: 'polarArea',
+                data: {
+                    labels: Object.keys(runtimeRanges),
+                    datasets: [{
+                        data: Object.values(runtimeRanges),
+                        backgroundColor: [
+                            'rgba(102, 126, 234, 0.8)',
+                            'rgba(118, 75, 162, 0.8)',
+                            'rgba(240, 147, 251, 0.8)',
+                            'rgba(245, 87, 108, 0.8)'
+                        ],
+                        borderColor: [
+                            '#667eea', '#764ba2', '#f093fb', '#f5576c'
+                        ],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 15,
+                                usePointStyle: true
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        async function updateStatsCards() {
+            let totalRuntime = 0;
+            let count = 0;
+            const directorCount = {};
+            let oldestYear = Infinity;
+            let oldestTitle = '-';
+            const recentGenres = {};
+
+            for (const film of userData.watchedFilms) {
+                const movie = await fetchMovieDetails(film.id);
+                if (movie) {
+                    totalRuntime += movie.runtime;
+                    count++;
+                    directorCount[movie.director] = (directorCount[movie.director] || 0) + 1;
+                    if (movie.year !== 'N/A' && movie.year < oldestYear) {
+                        oldestYear = movie.year;
+                        oldestTitle = `${movie.title} (${movie.year})`;
+                    }
+                }
+            }
+
+            document.getElementById('avgRuntime').textContent = count > 0 ? `${Math.round(totalRuntime / count)} min` : '0 min';
+
+            const topDirector = Object.entries(directorCount).sort(([,a], [,b]) => b - a)[0];
+            document.getElementById('topDirector').textContent = topDirector ? topDirector[0] : '-';
+
+            document.getElementById('oldestFilm').textContent = oldestTitle;
+
+            for (const film of userData.watchedFilms.slice(-3)) {
+                const movie = await fetchMovieDetails(film.id);
+                if (movie) {
+                    movie.genre.forEach(genre => {
+                        recentGenres[genre] = (recentGenres[genre] || 0) + 1;
+                    });
+                }
+            }
+            const topRecentGenre = Object.entries(recentGenres).sort(([,a], [,b]) => b - a)[0];
+            document.getElementById('recentGenre').textContent = topRecentGenre ? topRecentGenre[0] : '-';
+        }
+
+        // Initialize the app when page loads
+        init();
+    </script>
+</body>
+</html>
