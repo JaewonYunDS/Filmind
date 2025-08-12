@@ -470,14 +470,14 @@
             font-weight: bold;
         }
 
-        .edit-profile-form {
+        .edit-profile-form, .favorite-films-form {
             background: #f8f9ff;
             padding: 1rem;
             border-radius: 10px;
             margin-top: 1rem;
         }
 
-        .edit-profile-form input, .edit-profile-form textarea {
+        .edit-profile-form input, .edit-profile-form textarea, .favorite-films-form select {
             width: 100%;
             margin-bottom: 1rem;
             padding: 0.5rem;
@@ -485,17 +485,12 @@
             border-radius: 5px;
         }
 
-        .top-rated-films {
+        .favorite-films {
             margin-top: 3rem;
         }
 
-        .top-rated-films .films-grid {
+        .favorite-films .films-grid {
             grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-        }
-
-        .top-rated-films .film-card .rating {
-            font-size: 1rem;
-            margin-top: 0.5rem;
         }
 
         @media (max-width: 768px) {
@@ -641,9 +636,17 @@
                 </div>
             </div>
 
-            <div class="top-rated-films">
-                <h2>Top 10 Highest Rated Films</h2>
-                <div id="topRatedFilms" class="films-grid"></div>
+            <div class="favorite-films">
+                <h2>Favorite Films</h2>
+                <button class="btn btn-secondary" onclick="toggleFavoriteFilmsForm()">Edit Favorites</button>
+                <div id="favoriteFilmsForm" class="favorite-films-form hidden">
+                    <select id="favoriteFilmSelect" multiple size="5">
+                        <!-- Populated dynamically -->
+                    </select>
+                    <button class="btn btn-primary" onclick="saveFavoriteFilms()">Save Favorites</button>
+                    <button class="btn btn-secondary" onclick="toggleFavoriteFilmsForm()">Cancel</button>
+                </div>
+                <div id="favoriteFilms" class="films-grid"></div>
             </div>
 
             <div class="action-buttons">
@@ -668,6 +671,7 @@
         const TMDB_API_KEY = '7d0f1f2036d4dc0188fb3dcd12c945a2';
         const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
         const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
+        const DEFAULT_POSTER = 'https://upload.wikimedia.org/wikipedia/commons/4/4c/Clapperboard.svg';
 
         // User data storage
         let userData = {
@@ -675,7 +679,8 @@
             bio: 'Film enthusiast and data lover',
             profilePhoto: '',
             watchedFilms: [],
-            reviews: []
+            reviews: [],
+            favorites: []
         };
 
         // Cache for movie details to reduce API calls
@@ -733,8 +738,11 @@
             try {
                 const response = await fetch(`${TMDB_BASE_URL}/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}`);
                 const data = await response.json();
-                const results = data.results.slice(0, 5);
-                displaySearchResults(results);
+                const validResults = data.results
+                    .filter(movie => movie.release_date && movie.release_date.trim() !== '')
+                    .sort((a, b) => b.popularity - a.popularity)
+                    .slice(0, 5);
+                displaySearchResults(validResults);
             } catch (error) {
                 console.error('Error fetching search results:', error);
                 searchResults.innerHTML = '<p style="padding: 1rem; color: #666;">Error fetching results. Please try again.</p>';
@@ -751,10 +759,9 @@
 
             const html = results.map(movie => `
                 <div class="search-result" onclick="showMovieDetail(${movie.id})">
-                    <img src="${movie.poster_path ? TMDB_IMAGE_BASE_URL + movie.poster_path : ''}" alt="${movie.title}" onerror="this.style.display='none'">
+                    <img src="${movie.poster_path ? TMDB_IMAGE_BASE_URL + movie.poster_path : DEFAULT_POSTER}" alt="${movie.title}" onerror="this.src='${DEFAULT_POSTER}'">
                     <div class="search-result-info">
-                        <h4>${movie.title}</h4>
-                        <p>${movie.release_date ? movie.release_date.split('-')[0] : 'N/A'}</p>
+                        <h4>${movie.title} (${movie.release_date ? movie.release_date.split('-')[0] : 'N/A'})</h4>
                     </div>
                 </div>
             `).join('');
@@ -779,6 +786,9 @@
             try {
                 const response = await fetch(`${TMDB_BASE_URL}/movie/${movieId}?api_key=${TMDB_API_KEY}&append_to_response=credits`);
                 const movie = await response.json();
+                if (!movie.release_date || movie.release_date.trim() === '') {
+                    return null; // Skip movies without release date
+                }
                 const formattedMovie = {
                     id: movie.id,
                     title: movie.title,
@@ -787,7 +797,7 @@
                     genre: movie.genres.map(genre => genre.name),
                     runtime: movie.runtime || 0,
                     rating: movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A',
-                    poster: movie.poster_path ? TMDB_IMAGE_BASE_URL + movie.poster_path : '',
+                    poster: movie.poster_path ? TMDB_IMAGE_BASE_URL + movie.poster_path : DEFAULT_POSTER,
                     overview: movie.overview || 'No overview available.',
                     credits: {
                         cast: movie.credits?.cast || [],
@@ -827,7 +837,7 @@
 
             const movieHtml = `
                 <div class="movie-header">
-                    <img src="${movie.poster}" alt="${movie.title}" class="movie-poster" onerror="this.style.display='none'">
+                    <img src="${movie.poster}" alt="${movie.title}" class="movie-poster" onerror="this.src='${DEFAULT_POSTER}'">
                     <div class="movie-info">
                         <h1>${movie.title} (${movie.year})</h1>
                         <div class="movie-meta">
@@ -887,6 +897,7 @@
         // Watch/Unwatch functionality
         async function toggleWatched(movieId) {
             const movie = await fetchMovieDetails(movieId);
+            if (!movie) return;
             const watchedIndex = userData.watchedFilms.findIndex(f => f.id === movieId);
 
             if (watchedIndex === -1) {
@@ -900,11 +911,13 @@
                 document.getElementById(`watchBtn-${movieId}`).textContent = '✓ Watched';
             } else {
                 userData.watchedFilms.splice(watchedIndex, 1);
+                userData.favorites = userData.favorites.filter(id => id !== movieId);
                 document.getElementById(`watchBtn-${movieId}`).textContent = '+ Add to Watched';
             }
 
             saveUserData();
             updateProfileStats();
+            updateProfileDisplay();
         }
 
         // Review functionality
@@ -926,6 +939,7 @@
 
         async function saveReview(movieId) {
             const movie = await fetchMovieDetails(movieId);
+            if (!movie) return;
             const reviewText = document.getElementById(`reviewText-${movieId}`).value.trim();
             const ratingStars = document.querySelectorAll(`[data-movie-id="${movieId}"] span.active`);
             const rating = ratingStars.length;
@@ -954,8 +968,48 @@
             toggleReviewForm(movieId);
             saveUserData();
             updateProfileStats();
+            updateProfileDisplay();
 
             document.querySelector(`button[onclick="toggleReviewForm(${movieId})"]`).textContent = 'Edit Review';
+        }
+
+        // Favorite Films functionality
+        function toggleFavoriteFilmsForm() {
+            const form = document.getElementById('favoriteFilmsForm');
+            form.classList.toggle('hidden');
+            if (!form.classList.contains('hidden')) {
+                updateFavoriteFilmsForm();
+            }
+        }
+
+        async function updateFavoriteFilmsForm() {
+            const select = document.getElementById('favoriteFilmSelect');
+            select.innerHTML = '';
+            for (const film of userData.watchedFilms) {
+                const movie = await fetchMovieDetails(film.id);
+                if (movie) {
+                    const option = document.createElement('option');
+                    option.value = film.id;
+                    option.textContent = `${film.title} (${film.year})`;
+                    if (userData.favorites.includes(film.id)) {
+                        option.selected = true;
+                    }
+                    select.appendChild(option);
+                }
+            }
+        }
+
+        function saveFavoriteFilms() {
+            const select = document.getElementById('favoriteFilmSelect');
+            const selected = Array.from(select.selectedOptions).map(option => parseInt(option.value));
+            if (selected.length > 5) {
+                alert('You can select up to 5 favorite films.');
+                return;
+            }
+            userData.favorites = selected;
+            saveUserData();
+            toggleFavoriteFilmsForm();
+            updateProfileDisplay();
         }
 
         // Profile functionality
@@ -1026,7 +1080,7 @@
             updateProfileStats();
             displayUserFilms();
             displayUserReviews();
-            displayTopRatedFilms();
+            displayFavoriteFilms();
             generateDataVisualizations();
         }
 
@@ -1040,7 +1094,7 @@
 
             const html = userData.watchedFilms.slice(0, 12).map(film => `
                 <div class="film-card" onclick="showMovieDetail(${film.id})">
-                    <img src="${film.poster}" alt="${film.title}" onerror="this.style.display='none'">
+                    <img src="${film.poster}" alt="${film.title}" onerror="this.src='${DEFAULT_POSTER}'">
                     <h4>${film.title}</h4>
                     <p>${film.year}</p>
                 </div>
@@ -1060,7 +1114,7 @@
             const html = userData.reviews.slice(0, 5).map(review => `
                 <div class="review-card">
                     <div class="review-header">
-                        <img src="${review.poster}" alt="${review.title}" class="review-movie-poster" onerror="this.style.display='none'">
+                        <img src="${review.poster}" alt="${review.title}" class="review-movie-poster" onerror="this.src='${DEFAULT_POSTER}'">
                         <div class="review-info">
                             <h4>${review.title} (${review.year})</h4>
                             <div class="rating-stars">${'★'.repeat(review.rating)}${'☆'.repeat(5-review.rating)}</div>
@@ -1074,25 +1128,29 @@
             reviewsContainer.innerHTML = html;
         }
 
-        async function displayTopRatedFilms() {
-            const topRatedContainer = document.getElementById('topRatedFilms');
+        async function displayFavoriteFilms() {
+            const favoriteFilmsContainer = document.getElementById('favoriteFilms');
 
-            if (userData.reviews.length === 0) {
-                topRatedContainer.innerHTML = '<p style="text-align: center; color: #666;">No rated films yet.</p>';
+            if (userData.favorites.length === 0) {
+                favoriteFilmsContainer.innerHTML = '<p style="text-align: center; color: #666;">No favorite films selected yet.</p>';
                 return;
             }
 
-            const sortedReviews = userData.reviews.sort((a, b) => b.rating - a.rating).slice(0, 10);
+            const html = [];
+            for (const movieId of userData.favorites) {
+                const movie = await fetchMovieDetails(movieId);
+                if (movie) {
+                    html.push(`
+                        <div class="film-card" onclick="showMovieDetail(${movie.id})">
+                            <img src="${movie.poster}" alt="${movie.title}" onerror="this.src='${DEFAULT_POSTER}'">
+                            <h4>${movie.title}</h4>
+                            <p>${movie.year}</p>
+                        </div>
+                    `);
+                }
+            }
 
-            const html = sortedReviews.map(review => `
-                <div class="film-card" onclick="showMovieDetail(${review.movieId})">
-                    <img src="${review.poster}" alt="${review.title}" onerror="this.style.display='none'">
-                    <h4>${review.title}</h4>
-                    <p class="rating">${'★'.repeat(review.rating)}</p>
-                </div>
-            `).join('');
-
-            topRatedContainer.innerHTML = html;
+            favoriteFilmsContainer.innerHTML = html.join('');
         }
 
         // Data Visualization Functions
