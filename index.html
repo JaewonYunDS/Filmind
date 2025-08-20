@@ -13,64 +13,82 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: rgba(65, 65, 65, 0.95);
+            background: #1a1a1a;
+            color: #ffffff;
+            line-height: 1.5;
         }
 
         .navbar {
-            background: rgba(46, 46, 46, 0.95);
-            backdrop-filter: blur(10px);
-            padding: 1rem 2rem;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-            position: sticky;
-            top: 0;
-            z-index: 100;
+            background: #2a2a2a;
+            border-bottom: 1px solid #404040;
+            padding: 1rem 2.5rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            gap: 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .navbar-left {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
         }
 
         .logo {
-            font-size: 1.8rem;
+            font-size: 1.5rem;
             font-weight: bold;
-            background-color: #ffffff;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: #ffffff;
             cursor: pointer;
-            flex-shrink: 0;
         }
 
-        .navbar-search-container {
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #ffffff;
+            font-weight: 500;
+            padding: 0.5rem 0.8rem;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            background: #615d5c;
+            color: white;
+        }
+
+        .navbar-search {
             flex: 1;
             max-width: 600px;
+            margin: 0 2rem;
             position: relative;
         }
 
         .navbar-search-bar {
             width: 100%;
-            padding: 0.6rem 1rem;
+            padding: 0.6rem 1.2rem;
             font-size: 1rem;
             border: 2px solid rgba(255, 255, 255, 0.2);
             border-radius: 25px;
             outline: none;
             transition: all 0.3s;
             background: rgb(56, 56, 56);
-            color: rgb(255, 255, 255);
+            color: rgb(201, 201, 201);
         }
 
         .navbar-search-bar::placeholder {
-        color: rgba(255, 255, 255, 0.863);
+            color: #d4d4d4;
         }
 
-        .navbar-search-bar:focus {
+          .navbar-search-bar:focus {
         border-color: #e29d08;
-        background: rgba(255, 255, 255, 0.9);
-        color: #333;
-        }
-
-        .navbar-search-bar:focus::placeholder {
-            color: #999;
+        background: rgba(255, 247, 247, 0.9);
+        color: #000000;
         }
 
         .navbar-search-results {
@@ -78,147 +96,279 @@
             top: 100%;
             left: 0;
             right: 0;
-            background: rgb(255, 255, 255);
-            border-radius: 15px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
-            max-height: 400px;
+            background: #2a2a2a;
+            border: 1px solid #555;
+            border-radius: 4px;
+            max-height: 300px;
             overflow-y: auto;
             z-index: 1000;
-            margin-top: 0.5rem;
+            margin-top: 0.2rem;
         }
 
-        .nav-links {
+        .navbar-right {
             display: flex;
-            gap: 2rem;
-            flex-shrink: 0;
+            align-items: center;
+            gap: 1rem;
+            font-size: 0.9rem;
+            color: #cccccc;
         }
 
-        .nav-links a {
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .login-btn {
+            background: #777777;
+            color: white;
+            padding: 0.4rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
             text-decoration: none;
-            color: #ffffff;
-            font-weight: 500;
-            transition: color 0.3s;
-        }
-
-        .nav-links a:hover, .nav-links a.active {
-            color: #ffffff;
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
+            padding: 1rem;
+            display: grid;
+            grid-template-columns: 280px 1fr 300px;
+            gap: 1rem;
+            min-height: calc(100vh - 60px);
+        }
+
+        .sidebar-left, .sidebar-right {
+            background: #2a2a2a;
+            border-radius: 6px;
+            padding: 0;
+            height: fit-content;
+        }
+
+        .main-content {
+            background: #2a2a2a;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .sidebar-section {
+            border-bottom: 1px solid #404040;
+        }
+
+        .sidebar-section:last-child {
+            border-bottom: none;
+        }
+
+        .section-header {
+            background: #333;
+            color: #ffffff;
+            padding: 0.8rem 1rem;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .section-content {
+            padding: 0;
+        }
+
+        .list-item {
+            display: flex;
+            align-items: center;
+            padding: 0.6rem 1rem;
+            border-bottom: 1px solid #333;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .list-item:hover {
+            background: #333;
+        }
+
+        .list-item:last-child {
+            border-bottom: none;
+        }
+
+        .item-title {
+            flex: 1;
+            font-size: 0.85rem;
+            color: #ffffff;
+            line-height: 1.3;
+        }
+
+        .item-count {
+            color: #999;
+            font-size: 0.75rem;
+            margin-left: 0.5rem;
+        }
+
+        .status-live {
+            background: #ff4444;
+            color: white;
+            font-size: 0.6rem;
+            padding: 0.1rem 0.4rem;
+            border-radius: 2px;
+            margin-left: 0.5rem;
+        }
+
+        .status-scheduled {
+            background: #4a90e2;
+            color: white;
+            font-size: 0.6rem;
+            padding: 0.1rem 0.4rem;
+            border-radius: 2px;
+            margin-left: 0.5rem;
+        }
+
+        .featured-content {
+            position: relative;
+            height: 300px;
+            overflow: hidden;
+        }
+
+        .featured-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .featured-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,0.9));
+            color: white;
             padding: 2rem;
+        }
+
+        .featured-title {
+            font-size: 1.4rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            line-height: 1.2;
+        }
+
+        .featured-meta {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-bottom: 0.3rem;
+        }
+
+        .featured-date {
+            font-size: 0.75rem;
+            color: #ff6b35;
+        }
+
+        .content-list {
+            padding: 1rem;
+        }
+
+        .content-item {
+            display: flex;
+            gap: 0.8rem;
+            padding: 0.8rem 0;
+            border-bottom: 1px solid #333;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .content-item:hover {
+            background: #333;
+            margin: 0 -1rem;
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+
+        .content-item:last-child {
+            border-bottom: none;
+        }
+
+        .content-image {
+            width: 60px;
+            height: 40px;
+            object-fit: cover;
+            border-radius: 3px;
+            flex-shrink: 0;
+        }
+
+        .content-info {
+            flex: 1;
+        }
+
+        .content-title {
+            font-size: 0.85rem;
+            color: #ffffff;
+            margin-bottom: 0.2rem;
+            line-height: 1.2;
+        }
+
+        .content-meta {
+            font-size: 0.75rem;
+            color: #999;
         }
 
         .page {
             display: none;
-            background: rgba(235, 235, 235, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 2rem;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
-            margin-bottom: 2rem;
         }
 
         .page.active {
             display: block;
         }
 
-        .search-section {
-            text-align: center;
-            margin-bottom: 3rem;
-        }
-
-        .search-section p {
-            font-size: 1.2rem;
-            color: #666;
-            margin-bottom: 2rem;
-        }
-
-        .search-container {
-            position: relative;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        .search-bar {
-            width: 100%;
-            padding: 1rem 1.5rem;
-            font-size: 1.1rem;
-            border: 2px solid #e0e0e0;
-            border-radius: 50px;
-            outline: none;
-            transition: all 0.3s;
-            background: white;
-        }
-
-        .search-bar:focus {
-            border-color: #fcda1d;
-            box-shadow: 0 0 20px rgba(102, 126, 234, 0.2);
-        }
-
-        .search-results {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
-            max-height: 400px;
-            overflow-y: auto;
-            z-index: 1000;
-            margin-top: 0.5rem;
-        }
-
         .search-result {
             display: flex;
             align-items: center;
-            padding: 1rem;
+            padding: 0.8rem;
             cursor: pointer;
             transition: background 0.2s;
-            border-bottom: 1px solid #f0f0f0;
+            border-bottom: 1px solid #333;
         }
 
         .search-result:hover {
-            background: #f8f9ff;
+            background: #333;
         }
 
         .search-result img {
-            width: 50px;
-            height: 75px;
+            width: 40px;
+            height: 60px;
             object-fit: cover;
-            border-radius: 5px;
-            margin-right: 1rem;
-            background: #f0f0f0;
+            border-radius: 3px;
+            margin-right: 0.8rem;
         }
 
         .search-result-info h4 {
-            font-size: 1.1rem;
+            font-size: 0.9rem;
             margin-bottom: 0.2rem;
+            color: white;
         }
 
         .search-result-info p {
-            color: #666;
-            font-size: 0.9rem;
+            color: #999;
+            font-size: 0.75rem;
+        }
+
+        .movie-detail {
+            padding: 2rem;
         }
 
         .movie-header {
             display: flex;
             gap: 2rem;
-            margin-bottom: 3rem;
+            margin-bottom: 2rem;
         }
 
         .movie-poster {
-            width: 300px;
-            height: 450px;
+            width: 250px;
+            height: 375px;
             object-fit: cover;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            border-radius: 8px;
         }
 
         .movie-info h1 {
-            font-size: 2.5rem;
+            font-size: 2rem;
             margin-bottom: 0.5rem;
         }
 
@@ -226,34 +376,21 @@
             display: flex;
             gap: 1rem;
             margin-bottom: 1rem;
-            font-size: 1.1rem;
-            color: #666;
+            font-size: 0.9rem;
+            color: #999;
         }
 
         .rating-stars {
             color: #ffd700;
-            font-size: 1.5rem;
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
         }
 
         .movie-overview {
-            font-size: 1.1rem;
-            line-height: 1.8;
-            margin-bottom: 2rem;
-        }
-
-        .movie-cast, .movie-staff {
-            margin-top: 2rem;
-        }
-
-        .movie-cast h3, .movie-staff h3 {
-            font-size: 1.3rem;
-            margin-bottom: 0.8rem;
-            color: #667eea;
-        }
-
-        .movie-cast p, .movie-staff p {
-            font-size: 1.1rem;
+            font-size: 1rem;
             line-height: 1.6;
+            margin-bottom: 2rem;
+            color: #cccccc;
         }
 
         .action-buttons {
@@ -263,65 +400,53 @@
         }
 
         .btn {
-            padding: 0.8rem 2rem;
+            padding: 0.7rem 1.5rem;
             border: none;
-            border-radius: 25px;
-            font-size: 1rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
             cursor: pointer;
             transition: all 0.3s;
             font-weight: 500;
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: #ff6b35;
             color: white;
         }
 
         .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            background: #e55a2b;
         }
 
         .btn-secondary {
-            background: white;
-            color: #667eea;
-            border: 2px solid #667eea;
+            background: transparent;
+            color: #ff6b35;
+            border: 2px solid #ff6b35;
         }
 
         .btn-secondary:hover {
-            background: #667eea;
+            background: #ff6b35;
             color: white;
         }
 
-        .review-section {
-            margin-top: 2rem;
-        }
-
         .review-form {
-            background: #f8f9ff;
-            padding: 2rem;
-            border-radius: 15px;
-            margin-bottom: 2rem;
-        }
-
-        .rating-input {
-            display: flex;
-            gap: 0.5rem;
-            margin-bottom: 1rem;
-            align-items: center;
+            background: #333;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-top: 1rem;
         }
 
         .star-rating {
             display: flex;
             gap: 0.2rem;
+            margin-bottom: 1rem;
         }
 
         .star-rating span {
-            font-size: 2rem;
-            color: #ddd;
+            font-size: 1.5rem;
+            color: #555;
             cursor: pointer;
             transition: color 0.2s;
-            user-select: none;
         }
 
         .star-rating span:hover,
@@ -329,903 +454,440 @@
             color: #ffd700;
         }
 
-        .rating-value {
-        margin-left: 0.5rem;
-        font-weight: bold;
-        color: #616161;
-        }
-
         .review-textarea {
             width: 100%;
-            min-height: 120px;
-            padding: 1rem;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 1rem;
+            min-height: 100px;
+            padding: 0.8rem;
+            background: #404040;
+            border: 1px solid #555;
+            border-radius: 4px;
+            color: white;
             resize: vertical;
             margin-bottom: 1rem;
-        }
-
-        .profile-header {
-            text-align: center;
-            margin-bottom: 3rem;
-        }
-
-        .profile-avatar {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 3rem;
-            color: white;
-            margin: 0 auto 1rem;
-            object-fit: cover;
-        }
-
-        .profile-stats {
-            display: flex;
-            justify-content: center;
-            gap: 3rem;
-            margin-bottom: 2rem;
-        }
-
-        .stat {
-            text-align: center;
-        }
-
-        .stat-number {
-            font-size: 2rem;
-            font-weight: bold;
-            color: #808080;
-        }
-
-        .stat-label {
-            color: #666;
-        }
-
-        .films-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 3rem;
-        }
-
-        .film-card {
-            text-align: center;
-            cursor: pointer;
-            transition: transform 0.3s;
-        }
-
-        .film-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .film-card img {
-            width: 100%;
-            height: 225px;
-            object-fit: cover;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-            margin-bottom: 0.5rem;
-        }
-
-        .film-card h4 {
-            font-size: 0.9rem;
-            margin-bottom: 0.3rem;
-        }
-
-        .film-card .rating {
-            color: #ffd700;
-        }
-
-        .reviews-section h2 {
-            margin-bottom: 1.5rem;
-        }
-
-        .review-card {
-            background: #f8f9ff;
-            padding: 1.5rem;
-            border-radius: 15px;
-            margin-bottom: 1.5rem;
-        }
-
-        .review-header {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            margin-bottom: 1rem;
-        }
-
-        .review-movie-poster {
-            width: 50px;
-            height: 75px;
-            object-fit: cover;
-            border-radius: 5px;
-        }
-
-        .review-info h4 {
-            margin-bottom: 0.3rem;
-        }
-
-        .review-date {
-            color: #666;
-            font-size: 0.9rem;
         }
 
         .hidden {
             display: none !important;
         }
 
-        /* Home Page Layout Styles */
-        .home-layout {
-            display: grid;
-            grid-template-columns: 300px 1fr 280px;
-            gap: 2rem;
-            margin-top: 1rem;
-        }
-
-        /* Left Section - Discussions */
-        .discussions-section {
-            background: #f8f9ff;
-            border-radius: 15px;
-            padding: 1.5rem;
-            height: fit-content;
-        }
-
-        .discussions-section h2 {
-            font-size: 1.3rem;
-            margin-bottom: 1.5rem;
-            color: #667eea;
-            text-align: center;
-        }
-
-        .discussion-item {
-            background: white;
-            border-radius: 10px;
-            padding: 1rem;
-            margin-bottom: 1rem;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-            border-left: 4px solid #667eea;
-        }
-
-        .discussion-item:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-
-        .discussion-header {
-            display: flex;
-            flex-direction: column;
+        .live-indicator {
+            display: inline-flex;
+            align-items: center;
             gap: 0.3rem;
-            margin-bottom: 0.8rem;
-        }
-
-        .discussion-header h4 {
-            font-size: 0.9rem;
-            line-height: 1.3;
-            margin: 0;
-            color: #333;
-        }
-
-        .discussion-meta {
-            font-size: 0.75rem;
-            color: #666;
-        }
-
-        .discussion-preview {
-            font-size: 0.8rem;
-            color: #666;
-            line-height: 1.4;
-            margin-bottom: 0.8rem;
-            overflow: hidden;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-        }
-
-        .discussion-tags {
-            display: flex;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-        }
-
-        .tag {
-            background: rgba(102, 126, 234, 0.1);
-            color: #667eea;
-            padding: 0.2rem 0.5rem;
-            border-radius: 12px;
             font-size: 0.7rem;
-            font-weight: 500;
+            color: #ff4444;
         }
 
-        /* Middle Section - Headlines */
-        .headlines-section {
-            background: white;
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+        .live-dot {
+            width: 6px;
+            height: 6px;
+            background: #ff4444;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
         }
 
-        .featured-headline {
-            position: relative;
-            height: 300px;
-            overflow: hidden;
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
         }
 
-        .headline-image {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .headline-overlay {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: linear-gradient(transparent, rgba(0,0,0,0.8));
-            color: white;
-            padding: 2rem;
-        }
-
-        .headline-overlay h2 {
-            font-size: 1.5rem;
-            margin-bottom: 0.5rem;
-            line-height: 1.3;
-        }
-
-        .headline-overlay p {
-            font-size: 0.95rem;
-            margin-bottom: 0.5rem;
-            opacity: 0.9;
-        }
-
-        .headline-date {
-            font-size: 0.8rem;
-            opacity: 0.8;
-        }
-
-        .older-headlines {
-            padding: 1.5rem;
-        }
-
-        .older-headlines h3 {
-            font-size: 1.1rem;
-            margin-bottom: 1rem;
-            color: #667eea;
-        }
-
-        .headline-item {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 1.2rem;
-            cursor: pointer;
-            transition: background 0.2s;
-            padding: 0.5rem;
-            border-radius: 8px;
-        }
-
-        .headline-item:hover {
-            background: #f8f9ff;
-        }
-
-        .headline-item img {
-            width: 80px;
-            height: 60px;
-            object-fit: cover;
-            border-radius: 5px;
-            flex-shrink: 0;
-        }
-
-        .headline-content h4 {
-            font-size: 0.9rem;
-            margin-bottom: 0.3rem;
-            line-height: 1.3;
-            color: #333;
-        }
-
-        .headline-content p {
-            font-size: 0.8rem;
-            color: #666;
-            line-height: 1.4;
-            margin-bottom: 0.3rem;
-            overflow: hidden;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-        }
-
-        .headline-content .date {
-            font-size: 0.75rem;
-            color: #999;
-        }
-
-        /* Right Section - Films */
-        .films-section {
-            background: #f8f9ff;
-            border-radius: 15px;
-            padding: 1.5rem;
-            height: fit-content;
-        }
-
-        .films-section h2 {
-            font-size: 1.3rem;
-            margin-bottom: 1.5rem;
-            color: #667eea;
-            text-align: center;
-        }
-
-        .films-category {
-            margin-bottom: 2rem;
-        }
-
-        .films-category h3 {
-            font-size: 1rem;
-            margin-bottom: 1rem;
-            color: #333;
-            padding-bottom: 0.5rem;
-            border-bottom: 2px solid #e0e0e0;
-        }
-
-        .film-item {
-            display: flex;
-            gap: 0.8rem;
-            background: white;
-            border-radius: 8px;
-            padding: 0.8rem;
-            margin-bottom: 0.8rem;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        .film-item:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-
-        .film-poster {
-            width: 40px;
-            height: 60px;
-            object-fit: cover;
-            border-radius: 4px;
-            flex-shrink: 0;
-        }
-
-        .film-info h4 {
-            font-size: 0.85rem;
-            margin-bottom: 0.2rem;
-            line-height: 1.2;
-            color: #333;
-        }
-
-        .film-genre {
+        .time-indicator {
             font-size: 0.7rem;
-            color: #666;
-            margin-bottom: 0.3rem;
+            color: #4a90e2;
         }
 
-        .film-rating {
-            font-size: 0.75rem;
-            color: #ffd700;
-            font-weight: bold;
-        }
-
-        .film-date {
-            font-size: 0.75rem;
-            color: #667eea;
-            font-weight: 500;
-        }
-
-        .view-all-btn {
-            width: 100%;
-            margin-top: 1rem;
-        }
-
-        /* Responsive Design for Home Layout */
         @media (max-width: 1200px) {
-            .home-layout {
+            .container {
                 grid-template-columns: 250px 1fr 250px;
-                gap: 1.5rem;
             }
         }
 
         @media (max-width: 900px) {
-            .home-layout {
+            .container {
                 grid-template-columns: 1fr;
-                gap: 1.5rem;
+                gap: 1rem;
             }
             
-            .discussions-section,
-            .films-section {
+            .sidebar-left,
+            .sidebar-right {
                 order: 2;
             }
             
-            .headlines-section {
+            .main-content {
                 order: 1;
             }
-        }
 
-        /* Data Visualization Styles */
-        .data-viz-section {
-            margin-bottom: 3rem;
-        }
-
-        .charts-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin-bottom: 2rem;
-        }
-
-        .chart-container {
-            background: #f8f9ff;
-            padding: 1.5rem;
-            border-radius: 15px;
-            text-align: center;
-        }
-
-        .chart-container h3 {
-            margin-bottom: 1rem;
-            color: #5f5f5f;
-            font-size: 1.1rem;
-        }
-
-        .chart-container canvas {
-            max-height: 250px;
-        }
-
-        .stats-cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .stat-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 1.5rem;
-            border-radius: 15px;
-            text-align: center;
-        }
-
-        .stat-card h4 {
-            font-size: 0.9rem;
-            opacity: 0.9;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-        }
-
-        .big-number {
-            font-size: 1.8rem;
-            font-weight: bold;
-        }
-
-        .edit-profile-form input, .edit-profile-form textarea, .favorite-films-form select {
-            width: 100%;
-            margin-bottom: 1rem;
-            padding: 0.5rem;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
-
-        @media (max-width: 768px) {
             .movie-header {
                 flex-direction: column;
                 align-items: center;
                 text-align: center;
             }
+        }
 
-            .movie-poster {
-                width: 250px;
-                height: 375px;
-            }
-
-            .films-grid {
-                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-            }
-
-            .profile-stats {
-                gap: 2rem;
-            }
-
-            .container {
-                padding: 1rem;
-            }
-
+        @media (max-width: 768px) {
             .navbar {
                 flex-direction: column;
                 gap: 1rem;
                 padding: 1rem;
             }
 
-            .navbar-search-container {
+            .navbar-search {
                 order: 2;
                 max-width: 100%;
+                margin: 0;
             }
 
-            .nav-links {
-                order: 1;
-                gap: 1.5rem;
-            }
-
-            .logo {
-                order: 0;
+            .container {
+                padding: 0.5rem;
             }
         }
     </style>
 </head>
 <body>
     <nav class="navbar">
-    <div class="logo" onclick="showPage('home')">Lightbox</div>
-    
-    <div class="navbar-search-container">
-        <input type="text" class="navbar-search-bar" placeholder="Search..." id="searchInput" autocomplete="off">
-        <div id="searchResults" class="navbar-search-results hidden"></div>
-    </div>
-    
-    <div class="nav-links">
-        <a href="#" onclick="showPage('home')" class="active">Home</a>
-        <a href="#" onclick="showPage('profile')">Profile</a>
-    </div>
-</nav>
+        <div class="navbar-left">
+            <div class="logo" onclick="showPage('home')">Lightbox</div>
+        </div>
+        
+        <div class="navbar-search">
+            <input type="text" class="navbar-search-bar" placeholder="Search..." id="searchInput" autocomplete="off">
+            <div id="searchResults" class="navbar-search-results hidden"></div>
+        </div>
+        
+        <div class="navbar-right">
+
+            <div class="nav-links">
+                <a href="#" onclick="showPage('home')" class="active">Home</a>
+                <a href="#" onclick="showPage('profile')">Profile</a>
+
+            </div>
+            <a href="#" class="login-btn" onclick="showPage('profile')">Log in </a>
+        </div>
+    </nav>
 
     <div class="container">
-        <!-- Home Page -->
-        <div id="home-page" class="page active">
-            <div class="home-layout">
-                <!-- Left Section: Discussions/Forums -->
-                <div class="discussions-section">
-                    <h2>Community Discussions</h2>
-                    <div class="discussion-list">
-                        <div class="discussion-item">
-                            <div class="discussion-header">
-                                <h4>Best Films of 2024 - What's Your Pick?</h4>
-                                <span class="discussion-meta">234 replies • 2h ago</span>
-                            </div>
-                            <p class="discussion-preview">Let's discuss the standout films of this year. I personally think Dune: Part Two was...</p>
-                            <div class="discussion-tags">
-                                <span class="tag">Popular</span>
-                                <span class="tag">2024 Films</span>
-                            </div>
-                        </div>
-                        
-                        <div class="discussion-item">
-                            <div class="discussion-header">
-                                <h4>Underrated Horror Films You Should Watch</h4>
-                                <span class="discussion-meta">89 replies • 5h ago</span>
-                            </div>
-                            <p class="discussion-preview">Looking for some hidden gems in horror. Any recommendations for films that flew under...</p>
-                            <div class="discussion-tags">
-                                <span class="tag">Horror</span>
-                                <span class="tag">Hidden Gems</span>
-                            </div>
-                        </div>
-                        
-                        <div class="discussion-item">
-                            <div class="discussion-header">
-                                <h4>Christopher Nolan's Cinematography Evolution</h4>
-                                <span class="discussion-meta">156 replies • 1d ago</span>
-                            </div>
-                            <p class="discussion-preview">Fascinating analysis of how Nolan's visual style has changed from Memento to Oppenheimer...</p>
-                            <div class="discussion-tags">
-                                <span class="tag">Analysis</span>
-                                <span class="tag">Directors</span>
-                            </div>
-                        </div>
-                        
-                        <div class="discussion-item">
-                            <div class="discussion-header">
-                                <h4>Film Festivals Worth Attending in 2025</h4>
-                                <span class="discussion-meta">67 replies • 2d ago</span>
-                            </div>
-                            <p class="discussion-preview">Planning to attend some film festivals next year. Which ones offer the best indie selections?</p>
-                            <div class="discussion-tags">
-                                <span class="tag">Festivals</span>
-                                <span class="tag">Indie</span>
-                            </div>
-                        </div>
-                        
-                        <div class="discussion-item">
-                            <div class="discussion-header">
-                                <h4>Criterion Collection: What's Missing?</h4>
-                                <span class="discussion-meta">203 replies • 3d ago</span>
-                            </div>
-                            <p class="discussion-preview">What films do you think Criterion should add to their collection? I'm surprised they don't have...</p>
-                            <div class="discussion-tags">
-                                <span class="tag">Criterion</span>
-                                <span class="tag">Classic Films</span>
-                            </div>
-                        </div>
+        <!-- Left Sidebar -->
+        <div class="sidebar-left">
+            <!-- Popular Discussions -->
+            <div class="sidebar-section">
+                <div class="section-header">Popular Threads</div>
+                <div class="section-content">
+                    <div class="list-item">
+                        <div class="item-title">Best Films of 2025 Discussion</div>
+                        <div class="item-count">234</div>
                     </div>
-                    
-                    <button class="btn btn-secondary view-all-btn">View All Discussions</button>
-                </div>
-
-                <!-- Middle Section: Headlines -->
-                <div class="headlines-section">
-                    <div class="featured-headline">
-                        <img src="https://images.unsplash.com/photo-1489599763687-d2c5e7ad7f7d?w=800&h=400&fit=crop" alt="Featured Story" class="headline-image">
-                        <div class="headline-overlay">
-                            <h2>Martin Scorsese Announces New Crime Epic Set in 1970s New York</h2>
-                            <p>The legendary director reveals details about his upcoming film starring Leonardo DiCaprio and Robert De Niro</p>
-                            <span class="headline-date">August 19, 2025</span>
-                        </div>
+                    <div class="list-item">
+                        <div class="item-title">Underrated Horror Gems</div>
+                        <div class="item-count">89</div>
                     </div>
-                    
-                    <div class="older-headlines">
-                        <h3>Latest Film News</h3>
-                        
-                        <div class="headline-item">
-                            <img src="https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=120&h=80&fit=crop" alt="News">
-                            <div class="headline-content">
-                                <h4>Venice Film Festival 2025: Complete Winners List</h4>
-                                <p>Early whispers suggest major premieres from Tarantino, Chloé Zhao, and surprising newcomers.</p>
-                                <span class="date">1 day ago</span>
-                            </div>
-                        </div>
-                        
-                        <div class="headline-item">
-                            <img src="https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=120&h=80&fit=crop" alt="News">
-                            <div class="headline-content">
-                                <h4>Box Office Report: Indie Films Making Surprising Gains</h4>
-                                <p>Small-budget independent films are finding success in an increasingly competitive marketplace.</p>
-                                <span class="date">2 days ago</span>
-                            </div>
-                        </div>
+                    <div class="list-item">
+                        <div class="item-title">Nolan's Visual Evolution</div>
+                        <div class="item-count">156</div>
+                    </div>
+                    <div class="list-item">
+                        <div class="item-title">Film Festivals 2025</div>
+                        <div class="item-count">67</div>
+                    </div>
+                    <div class="list-item">
+                        <div class="item-title">Criterion Collection Missing</div>
+                        <div class="item-count">203</div>
                     </div>
                 </div>
+            </div>
 
-                <!-- Right Section: Ongoing & Upcoming Films -->
-                <div class="films-section">
-                    <h2>Now Playing & Coming Soon</h2>
-                    
-                    <div class="films-category">
-                        <h3>🎬 Now in Theaters</h3>
-                        <div class="film-list">
-                            <div class="film-item" onclick="showMovieDetail(1022789)">
-                                <img src="https://image.tmdb.org/t/p/w500/8cdWjvZQUExUUTzyp4t6EDMubfO.jpg" alt="Inside Out 2" class="film-poster">
-                                <div class="film-info">
-                                    <h4>Inside Out 2</h4>
-                                    <p class="film-genre">Animation, Family</p>
-                                    <div class="film-rating">★★★★☆ 8.2</div>
-                                </div>
-                            </div>
-                            
-                                <div class="film-item" onclick="showMovieDetail(653346)">
-                                <img src="https://image.tmdb.org/t/p/w500/alIy2kM8ryNV7rqoWnvewXgjHnW.jpg" alt="Kingdom of the Planet of the Apes" class="film-poster">
-                                <div class="film-info">
-                                    <h4>Kingdom of the Planet of the Apes</h4>
-                                    <p class="film-genre">Action, Adventure</p>
-                                    <div class="film-rating">★★★★☆ 7.1</div>
-                                </div>
-                            </div>
-                            
-                            <div class="film-item" onclick="showMovieDetail(519182)">
-                                <img src="https://image.tmdb.org/t/p/w500/gKkl37BQuKTanygYQG1pyYgLVgf.jpg" alt="Despicable Me 4" class="film-poster">
-                                <div class="film-info">
-                                    <h4>Despicable Me 4</h4>
-                                    <p class="film-genre">Animation, Comedy</p>
-                                    <div class="film-rating">★★★☆☆ 6.8</div>
-                                </div>
-                            </div>
-                            
-                            <div class="film-item" onclick="showMovieDetail(762441)">
-                                <img src="https://image.tmdb.org/t/p/w500/vpnVM9B6NMmQpWeZvzLvDESb2QY.jpg" alt="A Quiet Place: Day One" class="film-poster">
-                                <div class="film-info">
-                                    <h4>A Quiet Place: Day One</h4>
-                                    <p class="film-genre">Horror, Thriller</p>
-                                    <div class="film-rating">★★★★☆ 7.3</div>
-                                </div>
-                            </div>
-                        </div>
+            <!-- Recent Activity -->
+            <div class="sidebar-section">
+                <div class="section-header">Recent Discussion</div>
+                <div class="section-content">
+                    <div class="list-item">
+                        <div class="item-title">Daily Film Appreciation</div>
+                        <div class="item-count">22</div>
                     </div>
-                    
-                    <div class="films-category">
-                        <h3>🔜 Coming Soon</h3>
-                        <div class="film-list">
-                            <div class="film-item" onclick="showMovieDetail(558449)">
-                                <img src="https://image.tmdb.org/t/p/w500/7I6VUdPj6tQECNHdviJkUHD2u89.jpg" alt="Gladiator II" class="film-poster">
-                                <div class="film-info">
-                                    <h4>Gladiator II</h4>
-                                    <p class="film-genre">Action, Drama</p>
-                                    <div class="film-date">Nov 22, 2025</div>
-                                </div>
-                            </div>
-                            
-                            <div class="film-item" onclick="showMovieDetail(933260)">
-                                <img src="https://image.tmdb.org/t/p/w500/kYgQzzjNis5jJalYtIHgrom0gOx.jpg" alt="The Substance" class="film-poster">
-                                <div class="film-info">
-                                    <h4>The Substance</h4>
-                                    <p class="film-genre">Horror, Drama</p>
-                                    <div class="film-date">Sep 20, 2025</div>
-                                </div>
-                            </div>
-                            
-                            <div class="film-item" onclick="showMovieDetail(1184918)">
-                                <img src="https://image.tmdb.org/t/p/w500/ArvoFK6nlouZRxYmtIOUzKIrg90.jpg" alt="The Wild Robot" class="film-poster">
-                                <div class="film-info">
-                                    <h4>The Wild Robot</h4>
-                                    <p class="film-genre">Animation, Family</p>
-                                    <div class="film-date">Sep 27, 2025</div>
-                                </div>
-                            </div>
-                            
-                            <div class="film-item" onclick="showMovieDetail(917496)">
-                                <img src="https://image.tmdb.org/t/p/w500/zGJes8OLMc0zVr39RTqSWiPY5l.jpg" alt="Beetlejuice Beetlejuice" class="film-poster">
-                                <div class="film-info">
-                                    <h4>Beetlejuice Beetlejuice</h4>
-                                    <p class="film-genre">Comedy, Horror</p>
-                                    <div class="film-date">Oct 31, 2025</div>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="list-item">
+                        <div class="item-title">Vitality vs Fnatic Analysis</div>
+                        <div class="item-count">18</div>
                     </div>
-                    
-                    <button class="btn btn-primary view-all-btn">View All Films</button>
+                    <div class="list-item">
+                        <div class="item-title">Random Film Transfers</div>
+                        <div class="item-count">9</div>
+                    </div>
+                    <div class="list-item">
+                        <div class="item-title">Favorite Directors</div>
+                        <div class="item-count">33</div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Movie Detail Page -->
-        <div id="movie-page" class="page">
-            <div id="movieContent"></div>
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Home Page -->
+            <div id="home-page" class="page active">
+                <!-- Featured Content -->
+                <div class="featured-content">
+                    <img src="https://images.unsplash.com/photo-1489599763687-d2c5e7ad7f7d?w=800&h=400&fit=crop" alt="Featured" class="featured-image">
+                    <div class="featured-overlay">
+                        <div class="featured-title">Scorsese Announces New Crime Epic</div>
+                        <div class="featured-meta">The legendary director reveals details about his upcoming film starring DiCaprio and De Niro</div>
+                        <div class="featured-date">AUGUST 19 - YESTERDAY</div>
+                    </div>
+                </div>
+
+                <!-- Content List -->
+                <div class="content-list">
+                    <div class="content-item" onclick="showMovieDetail(1022789)">
+                        <img src="https://image.tmdb.org/t/p/w500/8cdWjvZQUExUUTzyp4t6EDMubfO.jpg" alt="Inside Out 2" class="content-image">
+                        <div class="content-info">
+                            <div class="content-title">Inside Out 2 dominates box office with $295M opening</div>
+                            <div class="content-meta">Animation sequel breaks records • 2h ago</div>
+                        </div>
+                        <div class="item-count">85</div>
+                    </div>
+
+                    <div class="content-item" onclick="showMovieDetail(653346)">
+                        <img src="https://image.tmdb.org/t/p/w500/alIy2kM8ryNV7rqoWnvewXgjHnW.jpg" alt="Planet of Apes" class="content-image">
+                        <div class="content-info">
+                            <div class="content-title">Kingdom of Planet of Apes gets sequel greenlight</div>
+                            <div class="content-meta">20th Century Studios confirms • 5h ago</div>
+                        </div>
+                        <div class="item-count">42</div>
+                    </div>
+
+                    <div class="content-item">
+                        <img src="https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=120&h=80&fit=crop" alt="Venice" class="content-image">
+                        <div class="content-info">
+                            <div class="content-title">Venice Film Festival 2025: Early favorites emerge</div>
+                            <div class="content-meta">Festival coverage • 1d ago</div>
+                        </div>
+                        <div class="item-count">156</div>
+                    </div>
+
+                    <div class="content-item" onclick="showMovieDetail(519182)">
+                        <img src="https://image.tmdb.org/t/p/w500/gKkl37BQuKTanygYQG1pyYgLVgf.jpg" alt="Despicable Me 4" class="content-image">
+                        <div class="content-info">
+                            <div class="content-title">Despicable Me 4 animation techniques breakdown</div>
+                            <div class="content-meta">Behind the scenes • 2d ago</div>
+                        </div>
+                        <div class="item-count">73</div>
+                    </div>
+
+                    <div class="content-item">
+                        <img src="https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=120&h=80&fit=crop" alt="Box Office" class="content-image">
+                        <div class="content-info">
+                            <div class="content-title">Indie films making surprise box office gains</div>
+                            <div class="content-meta">Market analysis • 3d ago</div>
+                        </div>
+                        <div class="item-count">29</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Movie Detail Page -->
+            <div id="movie-page" class="page">
+                <div id="movieContent" class="movie-detail"></div>
+            </div>
+
+            <!-- Profile Page -->
+            <div id="profile-page" class="page">
+                <div class="movie-detail">
+                    <h1>Your Profile</h1>
+                    <p style="color: #999; margin-bottom: 2rem;">Track your movie watching journey</p>
+                    
+                    <div style="display: flex; gap: 2rem; margin-bottom: 2rem;">
+                        <div style="text-align: center;">
+                            <div style="font-size: 2rem; font-weight: bold; color: #ff6b35;" id="filmCount">0</div>
+                            <div style="color: #999;">Films Watched</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 2rem; font-weight: bold; color: #ff6b35;" id="reviewCount">0</div>
+                            <div style="color: #999;">Reviews</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 2rem; font-weight: bold; color: #ff6b35;" id="avgRating">0.0</div>
+                            <div style="color: #999;">Avg Rating</div>
+                        </div>
+                    </div>
+
+                    <h2 style="margin-bottom: 1rem;">Recently Watched</h2>
+                    <div id="userFilms" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 1rem;"></div>
+                </div>
+            </div>
         </div>
 
-        <!-- Profile Page -->
-        <div id="profile-page" class="page">
-            <div class="profile-header">
-                <img id="profilePhoto" class="profile-avatar" src="" alt="Profile Photo" onerror="this.src=''; this.style.background='linear-gradient(135deg, #667eea, #764ba2)'; this.textContent='CU';">
-                <h2 id="profileName">Lightbox User</h2>
-                <p id="profileBio">Add bio here</p>
-                <button class="btn btn-secondary" onclick="toggleEditProfileForm()">Edit Profile</button>
-                <div id="editProfileForm" class="edit-profile-form hidden">
-                    <input type="text" id="editName" placeholder="Name">
-                    <textarea id="editBio" placeholder="Bio"></textarea>
-                    <input type="file" id="editPhoto" accept="image/*">
-                    <button class="btn btn-primary" onclick="saveProfile()">Save</button>
-                    <button class="btn btn-secondary" onclick="toggleEditProfileForm()">Cancel</button>
-                </div>
-                <div class="profile-stats">
-                    <div class="stat">
-                        <div class="stat-number" id="filmCount">0</div>
-                        <div class="stat-label">Films Watched</div>
+        <!-- Right Sidebar -->
+        <div class="sidebar-right">
+            <!-- Live Screenings -->
+            <div class="sidebar-section">
+                <div class="section-header">Live Events</div>
+                <div class="section-content">
+                    <div class="list-item">
+                        <div class="item-title">Melbourne International Film Festival</div>
+                            <div class="live-indicator">
+                            <div class="live-dot"></div>
+                            LIVE
+                        </div>
                     </div>
-                    <div class="stat">
-                        <div class="stat-number" id="reviewCount">0</div>
-                        <div class="stat-label">Reviews</div>
+                    <div class="list-item">
+                        <div class="item-title">Chichester International Film Festival</div>
+                           <div class="live-indicator">
+                            <div class="live-dot"></div>
+                            LIVE
+                        </div>
                     </div>
-                    <div class="stat">
-                        <div class="stat-number" id="avgRating">0.0</div>
-                        <div class="stat-label">Avg Rating</div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat-number" id="totalRuntime">0h</div>
-                        <div class="stat-label">Total Runtime</div>
+                    <div class="list-item">
+                        <div class="item-title">Edinburgh International Film Festival</div>
+                        <div class="time-indicator">2h 15m</div>
                     </div>
                 </div>
             </div>
 
-            <!-- Data Visualizations Section -->
-            <div class="data-viz-section">
-                <h2>Your Viewing Analytics</h2>
-                <div class="charts-grid">
-                    <div class="chart-container">
-                        <h3>Top Genres</h3>
-                        <canvas id="genreChart"></canvas>
+            <!-- Upcoming Events -->
+            <div class="sidebar-section">
+                <div class="section-header">Upcoming Events</div>
+                <div class="section-content">
+                    <div class="list-item" onclick="showMovieDetail(558449)">
+                        <div class="item-title">Venice International Film Festival</div>
+                        <div class="time-indicator">Aug 27</div>
                     </div>
-                    
-                    <div class="chart-container">
-                        <h3>Rating Distribution</h3>
-                        <canvas id="ratingChart"></canvas>
+                    <div class="list-item" onclick="showMovieDetail(933260)">
+                        <div class="item-title">Toronto International Film Festival</div>
+                        <div class="time-indicator">Sep 4</div>
                     </div>
-                    
-                    <div class="chart-container">
-                        <h3>Movies by Decade</h3>
-                        <canvas id="decadeChart"></canvas>
+                    <div class="list-item" onclick="showMovieDetail(1184918)">
+                        <div class="item-title">Creative Arts Emmy Awards</div>
+                        <div class="time-indicator">Sep 6</div>
                     </div>
-                    
-                    <div class="chart-container">
-                        <h3>Runtime Distribution</h3>
-                        <canvas id="runtimeChart"></canvas>
+                    <div class="list-item" onclick="showMovieDetail(917496)">
+                        <div class="item-title">Primetime Emmy Awards</div>
+                        <div class="time-indicator">Sep 14</div>
                     </div>
-
-                    <div class="chart-container">
-                        <h3>Average Rating by Genre</h3>
-                        <canvas id="avgRatingGenreChart"></canvas>
+                    <div class="list-item" onclick="showMovieDetail(917496)">
+                        <div class="item-title">AFI Fest</div>
+                        <div class="time-indicator">Oct 22</div>
                     </div>
-
-                    <div class="chart-container">
-                        <h3>Most Watched Directors</h3>
-                        <canvas id="directorFrequencyChart"></canvas>
+                    <div class="list-item" onclick="showMovieDetail(917496)">
+                        <div class="item-title">Tokyo International Film Festival</div>
+                        <div class="time-indicator">Oct 27</div>
                     </div>
-                </div>
-
-                <!-- Additional Stats Cards -->
-                <div class="stats-cards">
-                    <div class="stat-card">
-                        <h4>Average Film Length</h4>
-                        <div class="big-number" id="avgRuntime">0 min</div>
-                    </div>
-                    <div class="stat-card">
-                        <h4>Most Watched Director</h4>
-                        <div class="big-number" id="topDirector">-</div>
-                    </div>
-                    <div class="stat-card">
-                        <h4>Oldest Film Watched</h4>
-                        <div class="big-number" id="oldestFilm">-</div>
-                    </div>
-                    <div class="stat-card">
-                        <h4>Most Recent Genre</h4>
-                        <div class="big-number" id="recentGenre">-</div>
+                    <div class="list-item" onclick="showMovieDetail(917496)">
+                        <div class="item-title">Gotham Film Awards</div>
+                        <div class="time-indicator">Dec 1</div>
                     </div>
                 </div>
             </div>
 
-    
-
-            <div class="action-buttons">
-                <button class="btn btn-primary" onclick="exportData()">Export Data</button>
-                <input type="file" accept=".json" id="importInput" onchange="importData(event)" style="display: none;">
-                <button class="btn btn-secondary" onclick="document.getElementById('importInput').click()">Import Data</button>
+            <!-- Now Playing -->
+            <div class="sidebar-section">
+                <div class="section-header">Now in Theaters</div>
+                <div class="section-content">
+                    <div class="list-item" onclick="showMovieDetail(1022789)">
+                        <div class="item-title">Together</div>
+                        <div class="live-indicator">
+                            <div class="live-dot"></div>
+                            HOT
+                        </div>
+                    </div>
+                    <div class="list-item" onclick="showMovieDetail(762441)">
+                        <div class="item-title">Superman</div>
+                        <div class="item-count">★ 8.2</div>
+                    </div>
+                    <div class="list-item" onclick="showMovieDetail(519182)">
+                        <div class="item-title">Materialists</div>
+                        <div class="item-count">★ 6.8</div>
+                    </div>
+                    <div class="list-item" onclick="showMovieDetail(519182)">
+                        <div class="item-title">F1 The Movie</div>
+                        <div class="item-count">★ 6.8</div>
+                    </div>
+                    <div class="list-item" onclick="showMovieDetail(519182)">
+                        <div class="item-title">Weapons</div>
+                        <div class="item-count">★ 6.8</div>
+                    </div>
+                    <div class="list-item" onclick="showMovieDetail(519182)">
+                        <div class="item-title">Friendship</div>
+                        <div class="item-count">★ 6.8</div>
+                    </div>
+                </div>
             </div>
 
-            <h2>Recent Films</h2>
-            <div id="userFilms" class="films-grid"></div>
-
-            <div class="reviews-section">
-                <h2>Recent Reviews</h2>
-                <div id="userReviews"></div>
+            <!-- Recent Reviews -->
+            <div class="sidebar-section">
+                <div class="section-header">Upcoming Releases</div>
+                <div class="section-content">
+                    <div class="list-item">
+                        <div class="item-title">Dune: Part Two Review</div>
+                        <div class="item-count">★★★★★</div>
+                    </div>
+                    <div class="list-item">
+                        <div class="item-title">Oppenheimer Analysis</div>
+                        <div class="item-count">★★★★☆</div>
+                    </div>
+                </div>
             </div>
+
+        
+            <div class="sidebar-section">
+                <div class="section-header">Recent Results</div>
+                <div class="section-content">
+                    <div class="list-item">
+                        <div class="item-title">Dune: Part Two Review</div>
+                        <div class="item-count">★★★★★</div>
+                    </div>
+                    <div class="list-item">
+                        <div class="item-title">Oppenheimer Analysis</div>
+                        <div class="item-count">★★★★☆</div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script>
         // TMDB API Configuration
         const TMDB_API_KEY = '7d0f1f2036d4dc0188fb3dcd12c945a2';
         const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
         const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
-        const DEFAULT_POSTER = 'https://upload.wikimedia.org/wikipedia/commons/4/4c/Clapperboard.svg';
+        const DEFAULT_POSTER = 'https://via.placeholder.com/300x450/333/fff?text=No+Image';
 
         // User data storage
         let userData = {
             name: 'CineUser',
-            bio: 'Film enthusiast and data lover',
-            profilePhoto: '',
             watchedFilms: [],
-            reviews: [],
-            favorites: []
+            reviews: []
         };
 
-        // Cache for movie details to reduce API calls
+        // Cache for movie details
         let movieCache = {};
-
-        // Load user data from localStorage
-        function loadUserData() {
-            const saved = localStorage?.getItem('cineHubUserData');
-            if (saved) {
-                userData = JSON.parse(saved);
-            }
-            updateProfileStats();
-        }
-
-        // Save user data to localStorage
-        function saveUserData() {
-            if (typeof localStorage !== 'undefined') {
-                localStorage.setItem('cineHubUserData', JSON.stringify(userData));
-            }
-        }
 
         // Initialize the app
         function init() {
             loadUserData();
-            updateProfileHeader();
-            updateProfileDisplay();
+            updateProfileStats();
+        }
+
+        // Load user data
+        function loadUserData() {
+            try {
+                const saved = localStorage?.getItem('lightboxUserData');
+                if (saved) {
+                    userData = JSON.parse(saved);
+                }
+            } catch (e) {
+                console.log('No saved data found');
+            }
+        }
+
+        // Save user data
+        function saveUserData() {
+            try {
+                if (typeof localStorage !== 'undefined') {
+                    localStorage.setItem('lightboxUserData', JSON.stringify(userData));
+                }
+            } catch (e) {
+                console.log('Cannot save data');
+            }
         }
 
         // Page navigation
@@ -1234,16 +896,20 @@
                 page.classList.remove('active');
             });
             document.getElementById(pageId + '-page').classList.add('active');
+            
             document.querySelectorAll('.nav-links a').forEach(link => {
                 link.classList.remove('active');
             });
-            if (event) event.target.classList.add('active');
+            if (event && event.target) {
+                event.target.classList.add('active');
+            }
+            
             if (pageId === 'profile') {
                 updateProfileDisplay();
             }
         }
 
-        // Search functionality with TMDB API
+        // Search functionality
         const searchInput = document.getElementById('searchInput');
         const searchResults = document.getElementById('searchResults');
 
@@ -1264,23 +930,22 @@
                 displaySearchResults(validResults);
             } catch (error) {
                 console.error('Error fetching search results:', error);
-                searchResults.innerHTML = '<p style="padding: 1rem; color: #666;">Error fetching results. Please try again.</p>';
-                searchResults.classList.remove('hidden');
             }
         });
 
         function displaySearchResults(results) {
             if (results.length === 0) {
-                searchResults.innerHTML = '<p style="padding: 1rem; color: #666;">No results found.</p>';
+                searchResults.innerHTML = '<div style="padding: 1rem; color: #999;">No results found.</div>';
                 searchResults.classList.remove('hidden');
                 return;
             }
 
             const html = results.map(movie => `
                 <div class="search-result" onclick="showMovieDetail(${movie.id})">
-                    <img src="${movie.poster_path ? TMDB_IMAGE_BASE_URL + movie.poster_path : DEFAULT_POSTER}" alt="${movie.title}" onerror="this.src='${DEFAULT_POSTER}'">
+                    <img src="${movie.poster_path ? TMDB_IMAGE_BASE_URL + movie.poster_path : DEFAULT_POSTER}" alt="${movie.title}">
                     <div class="search-result-info">
-                        <h4>${movie.title} (${movie.release_date ? movie.release_date.split('-')[0] : 'N/A'})</h4>
+                        <h4>${movie.title}</h4>
+                        <p>${movie.release_date ? movie.release_date.split('-')[0] : 'N/A'}</p>
                     </div>
                 </div>
             `).join('');
@@ -1305,9 +970,11 @@
             try {
                 const response = await fetch(`${TMDB_BASE_URL}/movie/${movieId}?api_key=${TMDB_API_KEY}&append_to_response=credits`);
                 const movie = await response.json();
+                
                 if (!movie.release_date || movie.release_date.trim() === '') {
-                    return null; // Skip movies without release date
+                    return null;
                 }
+                
                 const formattedMovie = {
                     id: movie.id,
                     title: movie.title,
@@ -1323,6 +990,7 @@
                         crew: movie.credits?.crew || []
                     }
                 };
+                
                 movieCache[movieId] = formattedMovie;
                 return formattedMovie;
             } catch (error) {
@@ -1331,11 +999,11 @@
             }
         }
 
-        // Movie detail functionality
+        // Show movie detail
         async function showMovieDetail(movieId) {
             const movie = await fetchMovieDetails(movieId);
             if (!movie) {
-                document.getElementById('movieContent').innerHTML = '<p style="color: #666;">Error loading movie details.</p>';
+                document.getElementById('movieContent').innerHTML = '<p style="color: #999;">Error loading movie details.</p>';
                 showPage('movie');
                 return;
             }
@@ -1346,17 +1014,11 @@
             const isWatched = userData.watchedFilms.some(f => f.id === movieId);
             const userReview = userData.reviews.find(r => r.movieId === movieId);
 
-            // Get top 5 actors
             const actors = movie.credits?.cast?.slice(0, 5).map(actor => actor.name).join(', ') || 'Unknown';
-
-            // Get key staff
-            const producers = movie.credits?.crew?.filter(member => member.job === 'Producer').map(p => p.name).join(', ') || 'Unknown';
-            const cinematographer = movie.credits?.crew?.find(member => member.job === 'Director of Photography')?.name || 'Unknown';
-            const editor = movie.credits?.crew?.find(member => member.job === 'Editor')?.name || 'Unknown';
 
             const movieHtml = `
                 <div class="movie-header">
-                    <img src="${movie.poster}" alt="${movie.title}" class="movie-poster" onerror="this.src='${DEFAULT_POSTER}'">
+                    <img src="${movie.poster}" alt="${movie.title}" class="movie-poster">
                     <div class="movie-info">
                         <h1>${movie.title} (${movie.year})</h1>
                         <div class="movie-meta">
@@ -1376,31 +1038,26 @@
                             </button>
                         </div>
                         <div id="reviewForm-${movie.id}" class="review-form hidden">
-                            <div class="rating-input">
-                                <span>Your Rating:</span>
-                                <div class="star-rating" data-movie-id="${movie.id}">
-                                    ${[1,2,3,4,5].map(i => `<span onclick="setRating(${movie.id}, ${i})" data-rating="${i}">★</span>`).join('')}
-                                </div>
+                            <div class="star-rating" data-movie-id="${movie.id}">
+                                ${[1,2,3,4,5].map(i => `<span onclick="setRating(${movie.id}, ${i})" data-rating="${i}">★</span>`).join('')}
                             </div>
                             <textarea class="review-textarea" placeholder="Write your review..." id="reviewText-${movie.id}">${userReview ? userReview.text : ''}</textarea>
-                            <button class="btn btn-primary" onclick="saveReview(${movie.id})">Save Review</button>
-                            <button class="btn btn-secondary" onclick="toggleReviewForm(${movie.id})">Cancel</button>
+                            <div class="action-buttons">
+                                <button class="btn btn-primary" onclick="saveReview(${movie.id})">Save Review</button>
+                                <button class="btn btn-secondary" onclick="toggleReviewForm(${movie.id})">Cancel</button>
+                            </div>
                         </div>
                     </div>
                 </div>
+                
                 <div class="movie-overview">
-                    <h3>Synopsis</h3>
+                    <h3 style="margin-bottom: 1rem;">Synopsis</h3>
                     <p>${movie.overview}</p>
                 </div>
-                <div class="movie-cast">
-                    <h3>Cast</h3>
-                    <p>${actors}</p>
-                </div>
-                <div class="movie-staff">
-                    <h3>Key Staff</h3>
-                    <p><strong>Producers:</strong> ${producers}</p>
-                    <p><strong>Cinematographer:</strong> ${cinematographer}</p>
-                    <p><strong>Editor:</strong> ${editor}</p>
+                
+                <div style="margin-top: 2rem;">
+                    <h3 style="margin-bottom: 1rem; color: #ff6b35;">Cast</h3>
+                    <p style="color: #cccccc;">${actors}</p>
                 </div>
             `;
 
@@ -1413,10 +1070,11 @@
             showPage('movie');
         }
 
-        // Watch/Unwatch functionality
+        // Toggle watched status
         async function toggleWatched(movieId) {
             const movie = await fetchMovieDetails(movieId);
             if (!movie) return;
+            
             const watchedIndex = userData.watchedFilms.findIndex(f => f.id === movieId);
 
             if (watchedIndex === -1) {
@@ -1430,13 +1088,11 @@
                 document.getElementById(`watchBtn-${movieId}`).textContent = '✓ Watched';
             } else {
                 userData.watchedFilms.splice(watchedIndex, 1);
-                userData.favorites = userData.favorites.filter(id => id !== movieId);
                 document.getElementById(`watchBtn-${movieId}`).textContent = '+ Add to Watched';
             }
 
             saveUserData();
             updateProfileStats();
-            updateProfileDisplay();
         }
 
         // Review functionality
@@ -1459,6 +1115,7 @@
         async function saveReview(movieId) {
             const movie = await fetchMovieDetails(movieId);
             if (!movie) return;
+            
             const reviewText = document.getElementById(`reviewText-${movieId}`).value.trim();
             const ratingStars = document.querySelectorAll(`[data-movie-id="${movieId}"] span.active`);
             const rating = ratingStars.length;
@@ -1487,51 +1144,11 @@
             toggleReviewForm(movieId);
             saveUserData();
             updateProfileStats();
-            updateProfileDisplay();
 
             document.querySelector(`button[onclick="toggleReviewForm(${movieId})"]`).textContent = 'Edit Review';
         }
 
-        // Favorite Films functionality
-        function toggleFavoriteFilmsForm() {
-            const form = document.getElementById('favoriteFilmsForm');
-            form.classList.toggle('hidden');
-            if (!form.classList.contains('hidden')) {
-                updateFavoriteFilmsForm();
-            }
-        }
-
-        async function updateFavoriteFilmsForm() {
-            const select = document.getElementById('favoriteFilmSelect');
-            select.innerHTML = '';
-            for (const film of userData.watchedFilms) {
-                const movie = await fetchMovieDetails(film.id);
-                if (movie) {
-                    const option = document.createElement('option');
-                    option.value = film.id;
-                    option.textContent = `${film.title} (${film.year})`;
-                    if (userData.favorites.includes(film.id)) {
-                        option.selected = true;
-                    }
-                    select.appendChild(option);
-                }
-            }
-        }
-
-        function saveFavoriteFilms() {
-            const select = document.getElementById('favoriteFilmSelect');
-            const selected = Array.from(select.selectedOptions).map(option => parseInt(option.value));
-            if (selected.length > 5) {
-                alert('You can select up to 5 favorite films.');
-                return;
-            }
-            userData.favorites = selected;
-            saveUserData();
-            toggleFavoriteFilmsForm();
-            updateProfileDisplay();
-        }
-
-        // Profile functionality
+        // Update profile stats
         function updateProfileStats() {
             document.getElementById('filmCount').textContent = userData.watchedFilms.length;
             document.getElementById('reviewCount').textContent = userData.reviews.length;
@@ -1542,482 +1159,34 @@
             } else {
                 document.getElementById('avgRating').textContent = '0.0';
             }
-
-            let totalMinutes = 0;
-            userData.watchedFilms.forEach(async film => {
-                const movie = await fetchMovieDetails(film.id);
-                if (movie) totalMinutes += movie.runtime;
-                const hours = Math.floor(totalMinutes / 60);
-                document.getElementById('totalRuntime').textContent = `${hours}h`;
-            });
-        }
-
-        function updateProfileHeader() {
-            document.getElementById('profileName').textContent = userData.name || 'CineUser';
-            document.getElementById('profileBio').textContent = userData.bio || 'Film enthusiast and data lover';
-            const photoElem = document.getElementById('profilePhoto');
-            if (userData.profilePhoto) {
-                photoElem.src = userData.profilePhoto;
-                photoElem.style.background = 'none';
-                photoElem.textContent = '';
-            } else {
-                photoElem.src = '';
-                photoElem.style.background = 'linear-gradient(135deg, #667eea, #764ba2)';
-                photoElem.textContent = 'CU';
-            }
-        }
-
-        function toggleEditProfileForm() {
-            const form = document.getElementById('editProfileForm');
-            form.classList.toggle('hidden');
-            if (!form.classList.contains('hidden')) {
-                document.getElementById('editName').value = userData.name || '';
-                document.getElementById('editBio').value = userData.bio || '';
-            }
-        }
-
-        function saveProfile() {
-            userData.name = document.getElementById('editName').value.trim();
-            userData.bio = document.getElementById('editBio').value.trim();
-            const photoInput = document.getElementById('editPhoto');
-            if (photoInput.files.length > 0) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    userData.profilePhoto = e.target.result;
-                    saveUserData();
-                    updateProfileHeader();
-                };
-                reader.readAsDataURL(photoInput.files[0]);
-            } else {
-                saveUserData();
-                updateProfileHeader();
-            }
-            toggleEditProfileForm();
         }
 
         function updateProfileDisplay() {
             updateProfileStats();
             displayUserFilms();
-            displayUserReviews();
-            generateDataVisualizations();
         }
 
         function displayUserFilms() {
             const filmsGrid = document.getElementById('userFilms');
 
             if (userData.watchedFilms.length === 0) {
-                filmsGrid.innerHTML = '<p style="text-align: center; color: #666;">No films logged yet. Start by searching for movies!</p>';
+                filmsGrid.innerHTML = '<p style="text-align: center; color: #999; grid-column: 1/-1;">No films logged yet. Start by searching for movies!</p>';
                 return;
             }
 
             const html = userData.watchedFilms.slice(0, 12).map(film => `
-                <div class="film-card" onclick="showMovieDetail(${film.id})">
-                    <img src="${film.poster}" alt="${film.title}" onerror="this.src='${DEFAULT_POSTER}'">
-                    <h4>${film.title}</h4>
-                    <p>${film.year}</p>
+                <div style="cursor: pointer; transition: transform 0.2s;" onclick="showMovieDetail(${film.id})" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                    <img src="${film.poster}" alt="${film.title}" style="width: 100%; height: 180px; object-fit: cover; border-radius: 4px; margin-bottom: 0.5rem;">
+                    <div style="font-size: 0.8rem; color: white; text-align: center; line-height: 1.2;">${film.title}</div>
+                    <div style="font-size: 0.7rem; color: #999; text-align: center;">${film.year}</div>
                 </div>
             `).join('');
 
             filmsGrid.innerHTML = html;
         }
 
-        function displayUserReviews() {
-            const reviewsContainer = document.getElementById('userReviews');
-
-            if (userData.reviews.length === 0) {
-                reviewsContainer.innerHTML = '<p style="color: #666;">No reviews yet. Watch some movies and share your thoughts!</p>';
-                return;
-            }
-
-            const html = userData.reviews.slice(0, 5).map(review => `
-                <div class="review-card">
-                    <div class="review-header">
-                        <img src="${review.poster}" alt="${review.title}" class="review-movie-poster" onerror="this.src='${DEFAULT_POSTER}'">
-                        <div class="review-info">
-                            <h4>${review.title} (${review.year})</h4>
-                            <div class="rating-stars">${'★'.repeat(review.rating)}${'☆'.repeat(5-review.rating)}</div>
-                            <div class="review-date">${new Date(review.date).toLocaleDateString()}</div>
-                        </div>
-                    </div>
-                    ${review.text ? `<p>${review.text}</p>` : ''}
-                </div>
-            `).join('');
-
-            reviewsContainer.innerHTML = html;
-        }
-
-
-
-        // Data Visualization Functions
-        let charts = {};
-
-        async function generateDataVisualizations() {
-            if (userData.watchedFilms.length === 0) {
-                return;
-            }
-
-            await generateGenreChart();
-            generateRatingChart();
-            await generateDecadeChart();
-            await generateRuntimeChart();
-            await generateAvgRatingGenreChart();
-            await generateDirectorFrequencyChart();
-            await updateStatsCards();
-        }
-
-        async function generateGenreChart() {
-            const genreCount = {};
-
-            for (const film of userData.watchedFilms) {
-                const movie = await fetchMovieDetails(film.id);
-                if (movie) {
-                    movie.genre.forEach(genre => {
-                        genreCount[genre] = (genreCount[genre] || 0) + 1;
-                    });
-                }
-            }
-
-            const sortedGenres = Object.entries(genreCount)
-                .sort(([,a], [,b]) => b - a)
-                .slice(0, 6);
-
-            if (charts.genre) charts.genre.destroy();
-
-            const ctx = document.getElementById('genreChart').getContext('2d');
-            charts.genre = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: sortedGenres.map(([genre]) => genre),
-                    datasets: [{
-                        data: sortedGenres.map(([, count]) => count),
-                        backgroundColor: [
-                            '#667eea', '#764ba2', '#f093fb', '#f5576c',
-                            '#4facfe', '#00f2fe', '#43e97b', '#38f9d7'
-                        ],
-                        borderWidth: 0
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                padding: 20,
-                                usePointStyle: true
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        function generateRatingChart() {
-            const ratingCount = [0, 0, 0, 0, 0];
-
-            userData.reviews.forEach(review => {
-                ratingCount[review.rating - 1]++;
-            });
-
-            if (charts.rating) charts.rating.destroy();
-
-            const ctx = document.getElementById('ratingChart').getContext('2d');
-            charts.rating = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: ['★', '★★', '★★★', '★★★★', '★★★★★'],
-                    datasets: [{
-                        data: ratingCount,
-                        backgroundColor: '#667eea',
-                        borderRadius: 8,
-                        borderSkipped: false,
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: { stepSize: 1 }
-                        }
-                    }
-                }
-            });
-        }
-
-        async function generateDecadeChart() {
-            const decadeCount = {};
-
-            for (const film of userData.watchedFilms) {
-                const movie = await fetchMovieDetails(film.id);
-                if (movie && movie.year !== 'N/A') {
-                    const decade = Math.floor(movie.year / 10) * 10;
-                    const decadeLabel = `${decade}s`;
-                    decadeCount[decadeLabel] = (decadeCount[decadeLabel] || 0) + 1;
-                }
-            }
-
-            const sortedDecades = Object.entries(decadeCount).sort();
-
-            if (charts.decade) charts.decade.destroy();
-
-            const ctx = document.getElementById('decadeChart').getContext('2d');
-            charts.decade = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: sortedDecades.map(([decade]) => decade),
-                    datasets: [{
-                        label: 'Films Watched',
-                        data: sortedDecades.map(([, count]) => count),
-                        borderColor: '#764ba2',
-                        backgroundColor: 'rgba(118, 75, 162, 0.1)',
-                        fill: true,
-                        tension: 0.4,
-                        borderWidth: 3,
-                        pointBackgroundColor: '#764ba2',
-                        pointBorderColor: '#fff',
-                        pointBorderWidth: 2,
-                        pointRadius: 6
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: { stepSize: 1 }
-                        }
-                    }
-                }
-            });
-        }
-
-        async function generateRuntimeChart() {
-            const runtimeRanges = {
-                'Short (< 90 min)': 0,
-                'Standard (90-120 min)': 0,
-                'Long (120-150 min)': 0,
-                'Epic (150+ min)': 0
-            };
-
-            for (const film of userData.watchedFilms) {
-                const movie = await fetchMovieDetails(film.id);
-                if (movie) {
-                    if (movie.runtime < 90) runtimeRanges['Short (< 90 min)']++;
-                    else if (movie.runtime < 120) runtimeRanges['Standard (90-120 min)']++;
-                    else if (movie.runtime < 150) runtimeRanges['Long (120-150 min)']++;
-                    else runtimeRanges['Epic (150+ min)']++;
-                }
-            }
-
-            if (charts.runtime) charts.runtime.destroy();
-
-            const ctx = document.getElementById('runtimeChart').getContext('2d');
-            charts.runtime = new Chart(ctx, {
-                type: 'polarArea',
-                data: {
-                    labels: Object.keys(runtimeRanges),
-                    datasets: [{
-                        data: Object.values(runtimeRanges),
-                        backgroundColor: [
-                            'rgba(102, 126, 234, 0.8)',
-                            'rgba(118, 75, 162, 0.8)',
-                            'rgba(240, 147, 251, 0.8)',
-                            'rgba(245, 87, 108, 0.8)'
-                        ],
-                        borderColor: [
-                            '#667eea', '#764ba2', '#f093fb', '#f5576c'
-                        ],
-                        borderWidth: 2
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                padding: 15,
-                                usePointStyle: true
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        async function generateAvgRatingGenreChart() {
-            const genreRatings = {};
-
-            for (const review of userData.reviews) {
-                const movie = await fetchMovieDetails(review.movieId);
-                if (movie) {
-                    movie.genre.forEach(genre => {
-                        if (!genreRatings[genre]) genreRatings[genre] = { sum: 0, count: 0 };
-                        genreRatings[genre].sum += review.rating;
-                        genreRatings[genre].count++;
-                    });
-                }
-            }
-
-            const sortedGenres = Object.entries(genreRatings)
-                .map(([genre, data]) => [genre, data.sum / data.count])
-                .sort(([,a], [,b]) => b - a)
-                .slice(0, 10);
-
-            if (charts.avgRatingGenre) charts.avgRatingGenre.destroy();
-
-            const ctx = document.getElementById('avgRatingGenreChart').getContext('2d');
-            charts.avgRatingGenre = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: sortedGenres.map(([genre]) => genre),
-                    datasets: [{
-                        label: 'Average Rating',
-                        data: sortedGenres.map(([, avg]) => avg),
-                        backgroundColor: '#667eea',
-                        borderRadius: 8
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            max: 5,
-                            ticks: { stepSize: 1 }
-                        }
-                    }
-                }
-            });
-        }
-
-        async function generateDirectorFrequencyChart() {
-            const directorCount = {};
-
-            for (const film of userData.watchedFilms) {
-                const movie = await fetchMovieDetails(film.id);
-                if (movie && movie.director !== 'Unknown') {
-                    directorCount[movie.director] = (directorCount[movie.director] || 0) + 1;
-                }
-            }
-
-            const sortedDirectors = Object.entries(directorCount)
-                .sort(([,a], [,b]) => b - a)
-                .slice(0, 10);
-
-            if (charts.directorFrequency) charts.directorFrequency.destroy();
-
-            const ctx = document.getElementById('directorFrequencyChart').getContext('2d');
-            charts.directorFrequency = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: sortedDirectors.map(([director]) => director),
-                    datasets: [{
-                        label: 'Films Watched',
-                        data: sortedDirectors.map(([, count]) => count),
-                        backgroundColor: '#764ba2',
-                        borderRadius: 8
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: { stepSize: 1 }
-                        }
-                    }
-                }
-            });
-        }
-
-        async function updateStatsCards() {
-            let totalRuntime = 0;
-            let count = 0;
-            const directorCount = {};
-            let oldestYear = Infinity;
-            let oldestTitle = '-';
-            const recentGenres = {};
-
-            for (const film of userData.watchedFilms) {
-                const movie = await fetchMovieDetails(film.id);
-                if (movie) {
-                    totalRuntime += movie.runtime;
-                    count++;
-                    directorCount[movie.director] = (directorCount[movie.director] || 0) + 1;
-                    if (movie.year !== 'N/A' && movie.year < oldestYear) {
-                        oldestYear = movie.year;
-                        oldestTitle = `${movie.title} (${movie.year})`;
-                    }
-                }
-            }
-
-            document.getElementById('avgRuntime').textContent = count > 0 ? `${Math.round(totalRuntime / count)} min` : '0 min';
-
-            const topDirector = Object.entries(directorCount).sort(([,a], [,b]) => b - a)[0];
-            document.getElementById('topDirector').textContent = topDirector ? topDirector[0] : '-';
-
-            document.getElementById('oldestFilm').textContent = oldestTitle;
-
-            for (const film of userData.watchedFilms.slice(-3)) {
-                const movie = await fetchMovieDetails(film.id);
-                if (movie) {
-                    movie.genre.forEach(genre => {
-                        recentGenres[genre] = (recentGenres[genre] || 0) + 1;
-                    });
-                }
-            }
-            const topRecentGenre = Object.entries(recentGenres).sort(([,a], [,b]) => b - a)[0];
-            document.getElementById('recentGenre').textContent = topRecentGenre ? topRecentGenre[0] : '-';
-        }
-
-        function exportData() {
-            const dataStr = JSON.stringify(userData);
-            const blob = new Blob([dataStr], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = 'cinehub_data.json';
-            link.click();
-            URL.revokeObjectURL(url);
-        }
-
-        function importData(event) {
-            const file = event.target.files[0];
-            const reader = new FileReader();
-            reader.onload = () => {
-                try {
-                    userData = JSON.parse(reader.result);
-                    saveUserData();
-                    updateProfileHeader();
-                    updateProfileDisplay();
-                } catch (error) {
-                    alert('Error: Invalid file format. Please upload a valid JSON file.');
-                }
-            };
-            reader.readAsText(file);
-        }
-
         // Initialize the app when page loads
         init();
     </script>
 </body>
+</html>
