@@ -1,0 +1,1192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lightbox</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a1a;
+            color: #ffffff;
+            line-height: 1.5;
+        }
+
+        .navbar {
+            background: #2a2a2a;
+            border-bottom: 1px solid #404040;
+            padding: 1rem 2.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .navbar-left {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #ffffff;
+            cursor: pointer;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #ffffff;
+            font-weight: 500;
+            padding: 0.5rem 0.8rem;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            background: #615d5c;
+            color: white;
+        }
+
+        .navbar-search {
+            flex: 1;
+            max-width: 600px;
+            margin: 0 2rem;
+            position: relative;
+        }
+
+        .navbar-search-bar {
+            width: 100%;
+            padding: 0.6rem 1.2rem;
+            font-size: 1rem;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            outline: none;
+            transition: all 0.3s;
+            background: rgb(56, 56, 56);
+            color: rgb(201, 201, 201);
+        }
+
+        .navbar-search-bar::placeholder {
+            color: #d4d4d4;
+        }
+
+          .navbar-search-bar:focus {
+        border-color: #e29d08;
+        background: rgba(255, 247, 247, 0.9);
+        color: #000000;
+        }
+
+        .navbar-search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: #2a2a2a;
+            border: 1px solid #555;
+            border-radius: 4px;
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 1000;
+            margin-top: 0.2rem;
+        }
+
+        .navbar-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 0.9rem;
+            color: #cccccc;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .login-btn {
+            background: #777777;
+            color: white;
+            padding: 0.4rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem;
+            display: grid;
+            grid-template-columns: 280px 1fr 300px;
+            gap: 1rem;
+            min-height: calc(100vh - 60px);
+        }
+
+        .sidebar-left, .sidebar-right {
+            background: #2a2a2a;
+            border-radius: 6px;
+            padding: 0;
+            height: fit-content;
+        }
+
+        .main-content {
+            background: #2a2a2a;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .sidebar-section {
+            border-bottom: 1px solid #404040;
+        }
+
+        .sidebar-section:last-child {
+            border-bottom: none;
+        }
+
+        .section-header {
+            background: #333;
+            color: #ffffff;
+            padding: 0.8rem 1rem;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .section-content {
+            padding: 0;
+        }
+
+        .list-item {
+            display: flex;
+            align-items: center;
+            padding: 0.6rem 1rem;
+            border-bottom: 1px solid #333;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .list-item:hover {
+            background: #333;
+        }
+
+        .list-item:last-child {
+            border-bottom: none;
+        }
+
+        .item-title {
+            flex: 1;
+            font-size: 0.85rem;
+            color: #ffffff;
+            line-height: 1.3;
+        }
+
+        .item-count {
+            color: #999;
+            font-size: 0.75rem;
+            margin-left: 0.5rem;
+        }
+
+        .status-live {
+            background: #ff4444;
+            color: white;
+            font-size: 0.6rem;
+            padding: 0.1rem 0.4rem;
+            border-radius: 2px;
+            margin-left: 0.5rem;
+        }
+
+        .status-scheduled {
+            background: #4a90e2;
+            color: white;
+            font-size: 0.6rem;
+            padding: 0.1rem 0.4rem;
+            border-radius: 2px;
+            margin-left: 0.5rem;
+        }
+
+        .featured-content {
+            position: relative;
+            height: 300px;
+            overflow: hidden;
+        }
+
+        .featured-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .featured-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,0.9));
+            color: white;
+            padding: 2rem;
+        }
+
+        .featured-title {
+            font-size: 1.4rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            line-height: 1.2;
+        }
+
+        .featured-meta {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-bottom: 0.3rem;
+        }
+
+        .featured-date {
+            font-size: 0.75rem;
+            color: #ff6b35;
+        }
+
+        .content-list {
+            padding: 1rem;
+        }
+
+        .content-item {
+            display: flex;
+            gap: 0.8rem;
+            padding: 0.8rem 0;
+            border-bottom: 1px solid #333;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .content-item:hover {
+            background: #333;
+            margin: 0 -1rem;
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+
+        .content-item:last-child {
+            border-bottom: none;
+        }
+
+        .content-image {
+            width: 60px;
+            height: 40px;
+            object-fit: cover;
+            border-radius: 3px;
+            flex-shrink: 0;
+        }
+
+        .content-info {
+            flex: 1;
+        }
+
+        .content-title {
+            font-size: 0.85rem;
+            color: #ffffff;
+            margin-bottom: 0.2rem;
+            line-height: 1.2;
+        }
+
+        .content-meta {
+            font-size: 0.75rem;
+            color: #999;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .search-result {
+            display: flex;
+            align-items: center;
+            padding: 0.8rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            border-bottom: 1px solid #333;
+        }
+
+        .search-result:hover {
+            background: #333;
+        }
+
+        .search-result img {
+            width: 40px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 3px;
+            margin-right: 0.8rem;
+        }
+
+        .search-result-info h4 {
+            font-size: 0.9rem;
+            margin-bottom: 0.2rem;
+            color: white;
+        }
+
+        .search-result-info p {
+            color: #999;
+            font-size: 0.75rem;
+        }
+
+        .movie-detail {
+            padding: 2rem;
+        }
+
+        .movie-header {
+            display: flex;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .movie-poster {
+            width: 250px;
+            height: 375px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .movie-info h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .movie-meta {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            color: #999;
+        }
+
+        .rating-stars {
+            color: #ffd700;
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+        }
+
+        .movie-overview {
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+            color: #cccccc;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .btn {
+            padding: 0.7rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            background: #ff6b35;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #e55a2b;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: #ff6b35;
+            border: 2px solid #ff6b35;
+        }
+
+        .btn-secondary:hover {
+            background: #ff6b35;
+            color: white;
+        }
+
+        .review-form {
+            background: #333;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+        }
+
+        .star-rating {
+            display: flex;
+            gap: 0.2rem;
+            margin-bottom: 1rem;
+        }
+
+        .star-rating span {
+            font-size: 1.5rem;
+            color: #555;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .star-rating span:hover,
+        .star-rating span.active {
+            color: #ffd700;
+        }
+
+        .review-textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 0.8rem;
+            background: #404040;
+            border: 1px solid #555;
+            border-radius: 4px;
+            color: white;
+            resize: vertical;
+            margin-bottom: 1rem;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .live-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            font-size: 0.7rem;
+            color: #ff4444;
+        }
+
+        .live-dot {
+            width: 6px;
+            height: 6px;
+            background: #ff4444;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .time-indicator {
+            font-size: 0.7rem;
+            color: #4a90e2;
+        }
+
+        @media (max-width: 1200px) {
+            .container {
+                grid-template-columns: 250px 1fr 250px;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .container {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .sidebar-left,
+            .sidebar-right {
+                order: 2;
+            }
+            
+            .main-content {
+                order: 1;
+            }
+
+            .movie-header {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                gap: 1rem;
+                padding: 1rem;
+            }
+
+            .navbar-search {
+                order: 2;
+                max-width: 100%;
+                margin: 0;
+            }
+
+            .container {
+                padding: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-left">
+            <div class="logo" onclick="showPage('home')">Lightbox</div>
+        </div>
+        
+        <div class="navbar-search">
+            <input type="text" class="navbar-search-bar" placeholder="Search..." id="searchInput" autocomplete="off">
+            <div id="searchResults" class="navbar-search-results hidden"></div>
+        </div>
+        
+        <div class="navbar-right">
+
+            <div class="nav-links">
+                <a href="#" onclick="showPage('home')" class="active">Home</a>
+                <a href="#" onclick="showPage('profile')">Profile</a>
+
+            </div>
+            <a href="#" class="login-btn" onclick="showPage('profile')">Log in </a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Left Sidebar -->
+        <div class="sidebar-left">
+            <!-- Popular Discussions -->
+            <div class="sidebar-section">
+                <div class="section-header">Popular Threads</div>
+                <div class="section-content">
+                    <div class="list-item">
+                        <div class="item-title">Best Films of 2025 Discussion</div>
+                        <div class="item-count">234</div>
+                    </div>
+                    <div class="list-item">
+                        <div class="item-title">Underrated Horror Gems</div>
+                        <div class="item-count">89</div>
+                    </div>
+                    <div class="list-item">
+                        <div class="item-title">Nolan's Visual Evolution</div>
+                        <div class="item-count">156</div>
+                    </div>
+                    <div class="list-item">
+                        <div class="item-title">Film Festivals 2025</div>
+                        <div class="item-count">67</div>
+                    </div>
+                    <div class="list-item">
+                        <div class="item-title">Criterion Collection Missing</div>
+                        <div class="item-count">203</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="sidebar-section">
+                <div class="section-header">Recent Discussion</div>
+                <div class="section-content">
+                    <div class="list-item">
+                        <div class="item-title">Daily Film Appreciation</div>
+                        <div class="item-count">22</div>
+                    </div>
+                    <div class="list-item">
+                        <div class="item-title">Vitality vs Fnatic Analysis</div>
+                        <div class="item-count">18</div>
+                    </div>
+                    <div class="list-item">
+                        <div class="item-title">Random Film Transfers</div>
+                        <div class="item-count">9</div>
+                    </div>
+                    <div class="list-item">
+                        <div class="item-title">Favorite Directors</div>
+                        <div class="item-count">33</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Home Page -->
+            <div id="home-page" class="page active">
+                <!-- Featured Content -->
+                <div class="featured-content">
+                    <img src="https://images.unsplash.com/photo-1489599763687-d2c5e7ad7f7d?w=800&h=400&fit=crop" alt="Featured" class="featured-image">
+                    <div class="featured-overlay">
+                        <div class="featured-title">Scorsese Announces New Crime Epic</div>
+                        <div class="featured-meta">The legendary director reveals details about his upcoming film starring DiCaprio and De Niro</div>
+                        <div class="featured-date">AUGUST 19 - YESTERDAY</div>
+                    </div>
+                </div>
+
+                <!-- Content List -->
+                <div class="content-list">
+                    <div class="content-item" onclick="showMovieDetail(1022789)">
+                        <img src="https://image.tmdb.org/t/p/w500/8cdWjvZQUExUUTzyp4t6EDMubfO.jpg" alt="Inside Out 2" class="content-image">
+                        <div class="content-info">
+                            <div class="content-title">Inside Out 2 dominates box office with $295M opening</div>
+                            <div class="content-meta">Animation sequel breaks records • 2h ago</div>
+                        </div>
+                        <div class="item-count">85</div>
+                    </div>
+
+                    <div class="content-item" onclick="showMovieDetail(653346)">
+                        <img src="https://image.tmdb.org/t/p/w500/alIy2kM8ryNV7rqoWnvewXgjHnW.jpg" alt="Planet of Apes" class="content-image">
+                        <div class="content-info">
+                            <div class="content-title">Kingdom of Planet of Apes gets sequel greenlight</div>
+                            <div class="content-meta">20th Century Studios confirms • 5h ago</div>
+                        </div>
+                        <div class="item-count">42</div>
+                    </div>
+
+                    <div class="content-item">
+                        <img src="https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=120&h=80&fit=crop" alt="Venice" class="content-image">
+                        <div class="content-info">
+                            <div class="content-title">Venice Film Festival 2025: Early favorites emerge</div>
+                            <div class="content-meta">Festival coverage • 1d ago</div>
+                        </div>
+                        <div class="item-count">156</div>
+                    </div>
+
+                    <div class="content-item" onclick="showMovieDetail(519182)">
+                        <img src="https://image.tmdb.org/t/p/w500/gKkl37BQuKTanygYQG1pyYgLVgf.jpg" alt="Despicable Me 4" class="content-image">
+                        <div class="content-info">
+                            <div class="content-title">Despicable Me 4 animation techniques breakdown</div>
+                            <div class="content-meta">Behind the scenes • 2d ago</div>
+                        </div>
+                        <div class="item-count">73</div>
+                    </div>
+
+                    <div class="content-item">
+                        <img src="https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=120&h=80&fit=crop" alt="Box Office" class="content-image">
+                        <div class="content-info">
+                            <div class="content-title">Indie films making surprise box office gains</div>
+                            <div class="content-meta">Market analysis • 3d ago</div>
+                        </div>
+                        <div class="item-count">29</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Movie Detail Page -->
+            <div id="movie-page" class="page">
+                <div id="movieContent" class="movie-detail"></div>
+            </div>
+
+            <!-- Profile Page -->
+            <div id="profile-page" class="page">
+                <div class="movie-detail">
+                    <h1>Your Profile</h1>
+                    <p style="color: #999; margin-bottom: 2rem;">Track your movie watching journey</p>
+                    
+                    <div style="display: flex; gap: 2rem; margin-bottom: 2rem;">
+                        <div style="text-align: center;">
+                            <div style="font-size: 2rem; font-weight: bold; color: #ff6b35;" id="filmCount">0</div>
+                            <div style="color: #999;">Films Watched</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 2rem; font-weight: bold; color: #ff6b35;" id="reviewCount">0</div>
+                            <div style="color: #999;">Reviews</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 2rem; font-weight: bold; color: #ff6b35;" id="avgRating">0.0</div>
+                            <div style="color: #999;">Avg Rating</div>
+                        </div>
+                    </div>
+
+                    <h2 style="margin-bottom: 1rem;">Recently Watched</h2>
+                    <div id="userFilms" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 1rem;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Sidebar -->
+        <div class="sidebar-right">
+            <!-- Live Screenings -->
+            <div class="sidebar-section">
+                <div class="section-header">Live Events</div>
+                <div class="section-content">
+                    <div class="list-item">
+                        <div class="item-title">Melbourne International Film Festival</div>
+                            <div class="live-indicator">
+                            <div class="live-dot"></div>
+                            LIVE
+                        </div>
+                    </div>
+                    <div class="list-item">
+                        <div class="item-title">Chichester International Film Festival</div>
+                           <div class="live-indicator">
+                            <div class="live-dot"></div>
+                            LIVE
+                        </div>
+                    </div>
+                    <div class="list-item">
+                        <div class="item-title">Edinburgh International Film Festival</div>
+                        <div class="time-indicator">2h 15m</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upcoming Events -->
+            <div class="sidebar-section">
+                <div class="section-header">Upcoming Events</div>
+                <div class="section-content">
+                    <div class="list-item" onclick="showMovieDetail(558449)">
+                        <div class="item-title">Venice International Film Festival</div>
+                        <div class="time-indicator">Aug 27</div>
+                    </div>
+                    <div class="list-item" onclick="showMovieDetail(933260)">
+                        <div class="item-title">Toronto International Film Festival</div>
+                        <div class="time-indicator">Sep 4</div>
+                    </div>
+                    <div class="list-item" onclick="showMovieDetail(1184918)">
+                        <div class="item-title">Creative Arts Emmy Awards</div>
+                        <div class="time-indicator">Sep 6</div>
+                    </div>
+                    <div class="list-item" onclick="showMovieDetail(917496)">
+                        <div class="item-title">Primetime Emmy Awards</div>
+                        <div class="time-indicator">Sep 14</div>
+                    </div>
+                    <div class="list-item" onclick="showMovieDetail(917496)">
+                        <div class="item-title">AFI Fest</div>
+                        <div class="time-indicator">Oct 22</div>
+                    </div>
+                    <div class="list-item" onclick="showMovieDetail(917496)">
+                        <div class="item-title">Tokyo International Film Festival</div>
+                        <div class="time-indicator">Oct 27</div>
+                    </div>
+                    <div class="list-item" onclick="showMovieDetail(917496)">
+                        <div class="item-title">Gotham Film Awards</div>
+                        <div class="time-indicator">Dec 1</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Now Playing -->
+            <div class="sidebar-section">
+                <div class="section-header">Now in Theaters</div>
+                <div class="section-content">
+                    <div class="list-item" onclick="showMovieDetail(1022789)">
+                        <div class="item-title">Together</div>
+                        <div class="live-indicator">
+                            <div class="live-dot"></div>
+                            HOT
+                        </div>
+                    </div>
+                    <div class="list-item" onclick="showMovieDetail(762441)">
+                        <div class="item-title">Superman</div>
+                        <div class="item-count">★ 8.2</div>
+                    </div>
+                    <div class="list-item" onclick="showMovieDetail(519182)">
+                        <div class="item-title">Materialists</div>
+                        <div class="item-count">★ 6.8</div>
+                    </div>
+                    <div class="list-item" onclick="showMovieDetail(519182)">
+                        <div class="item-title">F1 The Movie</div>
+                        <div class="item-count">★ 6.8</div>
+                    </div>
+                    <div class="list-item" onclick="showMovieDetail(519182)">
+                        <div class="item-title">Weapons</div>
+                        <div class="item-count">★ 6.8</div>
+                    </div>
+                    <div class="list-item" onclick="showMovieDetail(519182)">
+                        <div class="item-title">Friendship</div>
+                        <div class="item-count">★ 6.8</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Reviews -->
+            <div class="sidebar-section">
+                <div class="section-header">Upcoming Releases</div>
+                <div class="section-content">
+                    <div class="list-item">
+                        <div class="item-title">Dune: Part Two Review</div>
+                        <div class="item-count">★★★★★</div>
+                    </div>
+                    <div class="list-item">
+                        <div class="item-title">Oppenheimer Analysis</div>
+                        <div class="item-count">★★★★☆</div>
+                    </div>
+                </div>
+            </div>
+
+        
+            <div class="sidebar-section">
+                <div class="section-header">Recent Results</div>
+                <div class="section-content">
+                    <div class="list-item">
+                        <div class="item-title">Dune: Part Two Review</div>
+                        <div class="item-count">★★★★★</div>
+                    </div>
+                    <div class="list-item">
+                        <div class="item-title">Oppenheimer Analysis</div>
+                        <div class="item-count">★★★★☆</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // TMDB API Configuration
+        const TMDB_API_KEY = '7d0f1f2036d4dc0188fb3dcd12c945a2';
+        const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
+        const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
+        const DEFAULT_POSTER = 'https://via.placeholder.com/300x450/333/fff?text=No+Image';
+
+        // User data storage
+        let userData = {
+            name: 'CineUser',
+            watchedFilms: [],
+            reviews: []
+        };
+
+        // Cache for movie details
+        let movieCache = {};
+
+        // Initialize the app
+        function init() {
+            loadUserData();
+            updateProfileStats();
+        }
+
+        // Load user data
+        function loadUserData() {
+            try {
+                const saved = localStorage?.getItem('lightboxUserData');
+                if (saved) {
+                    userData = JSON.parse(saved);
+                }
+            } catch (e) {
+                console.log('No saved data found');
+            }
+        }
+
+        // Save user data
+        function saveUserData() {
+            try {
+                if (typeof localStorage !== 'undefined') {
+                    localStorage.setItem('lightboxUserData', JSON.stringify(userData));
+                }
+            } catch (e) {
+                console.log('Cannot save data');
+            }
+        }
+
+        // Page navigation
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            document.getElementById(pageId + '-page').classList.add('active');
+            
+            document.querySelectorAll('.nav-links a').forEach(link => {
+                link.classList.remove('active');
+            });
+            if (event && event.target) {
+                event.target.classList.add('active');
+            }
+            
+            if (pageId === 'profile') {
+                updateProfileDisplay();
+            }
+        }
+
+        // Search functionality
+        const searchInput = document.getElementById('searchInput');
+        const searchResults = document.getElementById('searchResults');
+
+        searchInput.addEventListener('input', async function(e) {
+            const query = e.target.value.trim();
+            if (query.length < 2) {
+                searchResults.classList.add('hidden');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${TMDB_BASE_URL}/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}`);
+                const data = await response.json();
+                const validResults = data.results
+                    .filter(movie => movie.release_date && movie.release_date.trim() !== '')
+                    .sort((a, b) => b.popularity - a.popularity)
+                    .slice(0, 5);
+                displaySearchResults(validResults);
+            } catch (error) {
+                console.error('Error fetching search results:', error);
+            }
+        });
+
+        function displaySearchResults(results) {
+            if (results.length === 0) {
+                searchResults.innerHTML = '<div style="padding: 1rem; color: #999;">No results found.</div>';
+                searchResults.classList.remove('hidden');
+                return;
+            }
+
+            const html = results.map(movie => `
+                <div class="search-result" onclick="showMovieDetail(${movie.id})">
+                    <img src="${movie.poster_path ? TMDB_IMAGE_BASE_URL + movie.poster_path : DEFAULT_POSTER}" alt="${movie.title}">
+                    <div class="search-result-info">
+                        <h4>${movie.title}</h4>
+                        <p>${movie.release_date ? movie.release_date.split('-')[0] : 'N/A'}</p>
+                    </div>
+                </div>
+            `).join('');
+
+            searchResults.innerHTML = html;
+            searchResults.classList.remove('hidden');
+        }
+
+        // Hide search results when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+                searchResults.classList.add('hidden');
+            }
+        });
+
+        // Fetch movie details from TMDB
+        async function fetchMovieDetails(movieId) {
+            if (movieCache[movieId]) {
+                return movieCache[movieId];
+            }
+
+            try {
+                const response = await fetch(`${TMDB_BASE_URL}/movie/${movieId}?api_key=${TMDB_API_KEY}&append_to_response=credits`);
+                const movie = await response.json();
+                
+                if (!movie.release_date || movie.release_date.trim() === '') {
+                    return null;
+                }
+                
+                const formattedMovie = {
+                    id: movie.id,
+                    title: movie.title,
+                    year: movie.release_date ? parseInt(movie.release_date.split('-')[0]) : 'N/A',
+                    director: movie.credits?.crew?.find(member => member.job === 'Director')?.name || 'Unknown',
+                    genre: movie.genres.map(genre => genre.name),
+                    runtime: movie.runtime || 0,
+                    rating: movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A',
+                    poster: movie.poster_path ? TMDB_IMAGE_BASE_URL + movie.poster_path : DEFAULT_POSTER,
+                    overview: movie.overview || 'No overview available.',
+                    credits: {
+                        cast: movie.credits?.cast || [],
+                        crew: movie.credits?.crew || []
+                    }
+                };
+                
+                movieCache[movieId] = formattedMovie;
+                return formattedMovie;
+            } catch (error) {
+                console.error('Error fetching movie details:', error);
+                return null;
+            }
+        }
+
+        // Show movie detail
+        async function showMovieDetail(movieId) {
+            const movie = await fetchMovieDetails(movieId);
+            if (!movie) {
+                document.getElementById('movieContent').innerHTML = '<p style="color: #999;">Error loading movie details.</p>';
+                showPage('movie');
+                return;
+            }
+
+            searchResults.classList.add('hidden');
+            searchInput.value = '';
+
+            const isWatched = userData.watchedFilms.some(f => f.id === movieId);
+            const userReview = userData.reviews.find(r => r.movieId === movieId);
+
+            const actors = movie.credits?.cast?.slice(0, 5).map(actor => actor.name).join(', ') || 'Unknown';
+
+            const movieHtml = `
+                <div class="movie-header">
+                    <img src="${movie.poster}" alt="${movie.title}" class="movie-poster">
+                    <div class="movie-info">
+                        <h1>${movie.title} (${movie.year})</h1>
+                        <div class="movie-meta">
+                            <span>Directed by ${movie.director}</span>
+                            <span>•</span>
+                            <span>${movie.runtime} min</span>
+                            <span>•</span>
+                            <span>${movie.genre.join(', ')}</span>
+                        </div>
+                        <div class="rating-stars">★★★★★ ${movie.rating}/10</div>
+                        <div class="action-buttons">
+                            <button class="btn btn-primary" onclick="toggleWatched(${movie.id})" id="watchBtn-${movie.id}">
+                                ${isWatched ? '✓ Watched' : '+ Add to Watched'}
+                            </button>
+                            <button class="btn btn-secondary" onclick="toggleReviewForm(${movie.id})">
+                                ${userReview ? 'Edit Review' : 'Write Review'}
+                            </button>
+                        </div>
+                        <div id="reviewForm-${movie.id}" class="review-form hidden">
+                            <div class="star-rating" data-movie-id="${movie.id}">
+                                ${[1,2,3,4,5].map(i => `<span onclick="setRating(${movie.id}, ${i})" data-rating="${i}">★</span>`).join('')}
+                            </div>
+                            <textarea class="review-textarea" placeholder="Write your review..." id="reviewText-${movie.id}">${userReview ? userReview.text : ''}</textarea>
+                            <div class="action-buttons">
+                                <button class="btn btn-primary" onclick="saveReview(${movie.id})">Save Review</button>
+                                <button class="btn btn-secondary" onclick="toggleReviewForm(${movie.id})">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="movie-overview">
+                    <h3 style="margin-bottom: 1rem;">Synopsis</h3>
+                    <p>${movie.overview}</p>
+                </div>
+                
+                <div style="margin-top: 2rem;">
+                    <h3 style="margin-bottom: 1rem; color: #ff6b35;">Cast</h3>
+                    <p style="color: #cccccc;">${actors}</p>
+                </div>
+            `;
+
+            document.getElementById('movieContent').innerHTML = movieHtml;
+
+            if (userReview) {
+                setRatingDisplay(movie.id, userReview.rating);
+            }
+
+            showPage('movie');
+        }
+
+        // Toggle watched status
+        async function toggleWatched(movieId) {
+            const movie = await fetchMovieDetails(movieId);
+            if (!movie) return;
+            
+            const watchedIndex = userData.watchedFilms.findIndex(f => f.id === movieId);
+
+            if (watchedIndex === -1) {
+                userData.watchedFilms.push({
+                    id: movie.id,
+                    title: movie.title,
+                    year: movie.year,
+                    poster: movie.poster,
+                    watchedDate: new Date().toISOString()
+                });
+                document.getElementById(`watchBtn-${movieId}`).textContent = '✓ Watched';
+            } else {
+                userData.watchedFilms.splice(watchedIndex, 1);
+                document.getElementById(`watchBtn-${movieId}`).textContent = '+ Add to Watched';
+            }
+
+            saveUserData();
+            updateProfileStats();
+        }
+
+        // Review functionality
+        function toggleReviewForm(movieId) {
+            const form = document.getElementById(`reviewForm-${movieId}`);
+            form.classList.toggle('hidden');
+        }
+
+        function setRating(movieId, rating) {
+            setRatingDisplay(movieId, rating);
+        }
+
+        function setRatingDisplay(movieId, rating) {
+            const stars = document.querySelectorAll(`[data-movie-id="${movieId}"] span`);
+            stars.forEach((star, index) => {
+                star.classList.toggle('active', index < rating);
+            });
+        }
+
+        async function saveReview(movieId) {
+            const movie = await fetchMovieDetails(movieId);
+            if (!movie) return;
+            
+            const reviewText = document.getElementById(`reviewText-${movieId}`).value.trim();
+            const ratingStars = document.querySelectorAll(`[data-movie-id="${movieId}"] span.active`);
+            const rating = ratingStars.length;
+
+            if (rating === 0) {
+                alert('Please select a rating');
+                return;
+            }
+
+            userData.reviews = userData.reviews.filter(r => r.movieId !== movieId);
+
+            userData.reviews.unshift({
+                movieId: movieId,
+                title: movie.title,
+                year: movie.year,
+                poster: movie.poster,
+                rating: rating,
+                text: reviewText,
+                date: new Date().toISOString()
+            });
+
+            if (!userData.watchedFilms.some(f => f.id === movieId)) {
+                await toggleWatched(movieId);
+            }
+
+            toggleReviewForm(movieId);
+            saveUserData();
+            updateProfileStats();
+
+            document.querySelector(`button[onclick="toggleReviewForm(${movieId})"]`).textContent = 'Edit Review';
+        }
+
+        // Update profile stats
+        function updateProfileStats() {
+            document.getElementById('filmCount').textContent = userData.watchedFilms.length;
+            document.getElementById('reviewCount').textContent = userData.reviews.length;
+
+            if (userData.reviews.length > 0) {
+                const avgRating = userData.reviews.reduce((sum, review) => sum + review.rating, 0) / userData.reviews.length;
+                document.getElementById('avgRating').textContent = avgRating.toFixed(1);
+            } else {
+                document.getElementById('avgRating').textContent = '0.0';
+            }
+        }
+
+        function updateProfileDisplay() {
+            updateProfileStats();
+            displayUserFilms();
+        }
+
+        function displayUserFilms() {
+            const filmsGrid = document.getElementById('userFilms');
+
+            if (userData.watchedFilms.length === 0) {
+                filmsGrid.innerHTML = '<p style="text-align: center; color: #999; grid-column: 1/-1;">No films logged yet. Start by searching for movies!</p>';
+                return;
+            }
+
+            const html = userData.watchedFilms.slice(0, 12).map(film => `
+                <div style="cursor: pointer; transition: transform 0.2s;" onclick="showMovieDetail(${film.id})" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                    <img src="${film.poster}" alt="${film.title}" style="width: 100%; height: 180px; object-fit: cover; border-radius: 4px; margin-bottom: 0.5rem;">
+                    <div style="font-size: 0.8rem; color: white; text-align: center; line-height: 1.2;">${film.title}</div>
+                    <div style="font-size: 0.7rem; color: #999; text-align: center;">${film.year}</div>
+                </div>
+            `).join('');
+
+            filmsGrid.innerHTML = html;
+        }
+
+        // Initialize the app when page loads
+        init();
+    </script>
+</body>
+</html>
