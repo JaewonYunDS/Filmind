@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lightbox - Social Movie Database</title>
+    <title>Lightbox</title>
     <style>
         * {
             margin: 0;
@@ -459,6 +459,296 @@
             display: none !important;
         }
 
+        /* Home Page Layout Styles */
+        .home-layout {
+            display: grid;
+            grid-template-columns: 300px 1fr 280px;
+            gap: 2rem;
+            margin-top: 1rem;
+        }
+
+        /* Left Section - Discussions */
+        .discussions-section {
+            background: #f8f9ff;
+            border-radius: 15px;
+            padding: 1.5rem;
+            height: fit-content;
+        }
+
+        .discussions-section h2 {
+            font-size: 1.3rem;
+            margin-bottom: 1.5rem;
+            color: #667eea;
+            text-align: center;
+        }
+
+        .discussion-item {
+            background: white;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border-left: 4px solid #667eea;
+        }
+
+        .discussion-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .discussion-header {
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .discussion-header h4 {
+            font-size: 0.9rem;
+            line-height: 1.3;
+            margin: 0;
+            color: #333;
+        }
+
+        .discussion-meta {
+            font-size: 0.75rem;
+            color: #666;
+        }
+
+        .discussion-preview {
+            font-size: 0.8rem;
+            color: #666;
+            line-height: 1.4;
+            margin-bottom: 0.8rem;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+
+        .discussion-tags {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+            padding: 0.2rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+
+        /* Middle Section - Headlines */
+        .headlines-section {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+        }
+
+        .featured-headline {
+            position: relative;
+            height: 300px;
+            overflow: hidden;
+        }
+
+        .headline-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .headline-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,0.8));
+            color: white;
+            padding: 2rem;
+        }
+
+        .headline-overlay h2 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            line-height: 1.3;
+        }
+
+        .headline-overlay p {
+            font-size: 0.95rem;
+            margin-bottom: 0.5rem;
+            opacity: 0.9;
+        }
+
+        .headline-date {
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+
+        .older-headlines {
+            padding: 1.5rem;
+        }
+
+        .older-headlines h3 {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            color: #667eea;
+        }
+
+        .headline-item {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.2rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            padding: 0.5rem;
+            border-radius: 8px;
+        }
+
+        .headline-item:hover {
+            background: #f8f9ff;
+        }
+
+        .headline-item img {
+            width: 80px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 5px;
+            flex-shrink: 0;
+        }
+
+        .headline-content h4 {
+            font-size: 0.9rem;
+            margin-bottom: 0.3rem;
+            line-height: 1.3;
+            color: #333;
+        }
+
+        .headline-content p {
+            font-size: 0.8rem;
+            color: #666;
+            line-height: 1.4;
+            margin-bottom: 0.3rem;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+
+        .headline-content .date {
+            font-size: 0.75rem;
+            color: #999;
+        }
+
+        /* Right Section - Films */
+        .films-section {
+            background: #f8f9ff;
+            border-radius: 15px;
+            padding: 1.5rem;
+            height: fit-content;
+        }
+
+        .films-section h2 {
+            font-size: 1.3rem;
+            margin-bottom: 1.5rem;
+            color: #667eea;
+            text-align: center;
+        }
+
+        .films-category {
+            margin-bottom: 2rem;
+        }
+
+        .films-category h3 {
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            color: #333;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .film-item {
+            display: flex;
+            gap: 0.8rem;
+            background: white;
+            border-radius: 8px;
+            padding: 0.8rem;
+            margin-bottom: 0.8rem;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .film-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .film-poster {
+            width: 40px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 4px;
+            flex-shrink: 0;
+        }
+
+        .film-info h4 {
+            font-size: 0.85rem;
+            margin-bottom: 0.2rem;
+            line-height: 1.2;
+            color: #333;
+        }
+
+        .film-genre {
+            font-size: 0.7rem;
+            color: #666;
+            margin-bottom: 0.3rem;
+        }
+
+        .film-rating {
+            font-size: 0.75rem;
+            color: #ffd700;
+            font-weight: bold;
+        }
+
+        .film-date {
+            font-size: 0.75rem;
+            color: #667eea;
+            font-weight: 500;
+        }
+
+        .view-all-btn {
+            width: 100%;
+            margin-top: 1rem;
+        }
+
+        /* Responsive Design for Home Layout */
+        @media (max-width: 1200px) {
+            .home-layout {
+                grid-template-columns: 250px 1fr 250px;
+                gap: 1.5rem;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .home-layout {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+            
+            .discussions-section,
+            .films-section {
+                order: 2;
+            }
+            
+            .headlines-section {
+                order: 1;
+            }
+        }
+
         /* Data Visualization Styles */
         .data-viz-section {
             margin-bottom: 3rem;
@@ -587,6 +877,197 @@
     <div class="container">
         <!-- Home Page -->
         <div id="home-page" class="page active">
+            <div class="home-layout">
+                <!-- Left Section: Discussions/Forums -->
+                <div class="discussions-section">
+                    <h2>Community Discussions</h2>
+                    <div class="discussion-list">
+                        <div class="discussion-item">
+                            <div class="discussion-header">
+                                <h4>Best Films of 2024 - What's Your Pick?</h4>
+                                <span class="discussion-meta">234 replies • 2h ago</span>
+                            </div>
+                            <p class="discussion-preview">Let's discuss the standout films of this year. I personally think Dune: Part Two was...</p>
+                            <div class="discussion-tags">
+                                <span class="tag">Popular</span>
+                                <span class="tag">2024 Films</span>
+                            </div>
+                        </div>
+                        
+                        <div class="discussion-item">
+                            <div class="discussion-header">
+                                <h4>Underrated Horror Films You Should Watch</h4>
+                                <span class="discussion-meta">89 replies • 5h ago</span>
+                            </div>
+                            <p class="discussion-preview">Looking for some hidden gems in horror. Any recommendations for films that flew under...</p>
+                            <div class="discussion-tags">
+                                <span class="tag">Horror</span>
+                                <span class="tag">Hidden Gems</span>
+                            </div>
+                        </div>
+                        
+                        <div class="discussion-item">
+                            <div class="discussion-header">
+                                <h4>Christopher Nolan's Cinematography Evolution</h4>
+                                <span class="discussion-meta">156 replies • 1d ago</span>
+                            </div>
+                            <p class="discussion-preview">Fascinating analysis of how Nolan's visual style has changed from Memento to Oppenheimer...</p>
+                            <div class="discussion-tags">
+                                <span class="tag">Analysis</span>
+                                <span class="tag">Directors</span>
+                            </div>
+                        </div>
+                        
+                        <div class="discussion-item">
+                            <div class="discussion-header">
+                                <h4>Film Festivals Worth Attending in 2025</h4>
+                                <span class="discussion-meta">67 replies • 2d ago</span>
+                            </div>
+                            <p class="discussion-preview">Planning to attend some film festivals next year. Which ones offer the best indie selections?</p>
+                            <div class="discussion-tags">
+                                <span class="tag">Festivals</span>
+                                <span class="tag">Indie</span>
+                            </div>
+                        </div>
+                        
+                        <div class="discussion-item">
+                            <div class="discussion-header">
+                                <h4>Criterion Collection: What's Missing?</h4>
+                                <span class="discussion-meta">203 replies • 3d ago</span>
+                            </div>
+                            <p class="discussion-preview">What films do you think Criterion should add to their collection? I'm surprised they don't have...</p>
+                            <div class="discussion-tags">
+                                <span class="tag">Criterion</span>
+                                <span class="tag">Classic Films</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-secondary view-all-btn">View All Discussions</button>
+                </div>
+
+                <!-- Middle Section: Headlines -->
+                <div class="headlines-section">
+                    <div class="featured-headline">
+                        <img src="https://images.unsplash.com/photo-1489599763687-d2c5e7ad7f7d?w=800&h=400&fit=crop" alt="Featured Story" class="headline-image">
+                        <div class="headline-overlay">
+                            <h2>Martin Scorsese Announces New Crime Epic Set in 1970s New York</h2>
+                            <p>The legendary director reveals details about his upcoming film starring Leonardo DiCaprio and Robert De Niro</p>
+                            <span class="headline-date">August 19, 2025</span>
+                        </div>
+                    </div>
+                    
+                    <div class="older-headlines">
+                        <h3>Latest Film News</h3>
+                        
+                        <div class="headline-item">
+                            <img src="https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=120&h=80&fit=crop" alt="News">
+                            <div class="headline-content">
+                                <h4>Venice Film Festival 2025: Complete Winners List</h4>
+                                <p>Early whispers suggest major premieres from Tarantino, Chloé Zhao, and surprising newcomers.</p>
+                                <span class="date">1 day ago</span>
+                            </div>
+                        </div>
+                        
+                        <div class="headline-item">
+                            <img src="https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=120&h=80&fit=crop" alt="News">
+                            <div class="headline-content">
+                                <h4>Box Office Report: Indie Films Making Surprising Gains</h4>
+                                <p>Small-budget independent films are finding success in an increasingly competitive marketplace.</p>
+                                <span class="date">2 days ago</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Section: Ongoing & Upcoming Films -->
+                <div class="films-section">
+                    <h2>Now Playing & Coming Soon</h2>
+                    
+                    <div class="films-category">
+                        <h3>🎬 Now in Theaters</h3>
+                        <div class="film-list">
+                            <div class="film-item" onclick="showMovieDetail(1022789)">
+                                <img src="https://image.tmdb.org/t/p/w500/8cdWjvZQUExUUTzyp4t6EDMubfO.jpg" alt="Inside Out 2" class="film-poster">
+                                <div class="film-info">
+                                    <h4>Inside Out 2</h4>
+                                    <p class="film-genre">Animation, Family</p>
+                                    <div class="film-rating">★★★★☆ 8.2</div>
+                                </div>
+                            </div>
+                            
+                                <div class="film-item" onclick="showMovieDetail(653346)">
+                                <img src="https://image.tmdb.org/t/p/w500/alIy2kM8ryNV7rqoWnvewXgjHnW.jpg" alt="Kingdom of the Planet of the Apes" class="film-poster">
+                                <div class="film-info">
+                                    <h4>Kingdom of the Planet of the Apes</h4>
+                                    <p class="film-genre">Action, Adventure</p>
+                                    <div class="film-rating">★★★★☆ 7.1</div>
+                                </div>
+                            </div>
+                            
+                            <div class="film-item" onclick="showMovieDetail(519182)">
+                                <img src="https://image.tmdb.org/t/p/w500/gKkl37BQuKTanygYQG1pyYgLVgf.jpg" alt="Despicable Me 4" class="film-poster">
+                                <div class="film-info">
+                                    <h4>Despicable Me 4</h4>
+                                    <p class="film-genre">Animation, Comedy</p>
+                                    <div class="film-rating">★★★☆☆ 6.8</div>
+                                </div>
+                            </div>
+                            
+                            <div class="film-item" onclick="showMovieDetail(762441)">
+                                <img src="https://image.tmdb.org/t/p/w500/vpnVM9B6NMmQpWeZvzLvDESb2QY.jpg" alt="A Quiet Place: Day One" class="film-poster">
+                                <div class="film-info">
+                                    <h4>A Quiet Place: Day One</h4>
+                                    <p class="film-genre">Horror, Thriller</p>
+                                    <div class="film-rating">★★★★☆ 7.3</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="films-category">
+                        <h3>🔜 Coming Soon</h3>
+                        <div class="film-list">
+                            <div class="film-item" onclick="showMovieDetail(558449)">
+                                <img src="https://image.tmdb.org/t/p/w500/7I6VUdPj6tQECNHdviJkUHD2u89.jpg" alt="Gladiator II" class="film-poster">
+                                <div class="film-info">
+                                    <h4>Gladiator II</h4>
+                                    <p class="film-genre">Action, Drama</p>
+                                    <div class="film-date">Nov 22, 2025</div>
+                                </div>
+                            </div>
+                            
+                            <div class="film-item" onclick="showMovieDetail(933260)">
+                                <img src="https://image.tmdb.org/t/p/w500/kYgQzzjNis5jJalYtIHgrom0gOx.jpg" alt="The Substance" class="film-poster">
+                                <div class="film-info">
+                                    <h4>The Substance</h4>
+                                    <p class="film-genre">Horror, Drama</p>
+                                    <div class="film-date">Sep 20, 2025</div>
+                                </div>
+                            </div>
+                            
+                            <div class="film-item" onclick="showMovieDetail(1184918)">
+                                <img src="https://image.tmdb.org/t/p/w500/ArvoFK6nlouZRxYmtIOUzKIrg90.jpg" alt="The Wild Robot" class="film-poster">
+                                <div class="film-info">
+                                    <h4>The Wild Robot</h4>
+                                    <p class="film-genre">Animation, Family</p>
+                                    <div class="film-date">Sep 27, 2025</div>
+                                </div>
+                            </div>
+                            
+                            <div class="film-item" onclick="showMovieDetail(917496)">
+                                <img src="https://image.tmdb.org/t/p/w500/zGJes8OLMc0zVr39RTqSWiPY5l.jpg" alt="Beetlejuice Beetlejuice" class="film-poster">
+                                <div class="film-info">
+                                    <h4>Beetlejuice Beetlejuice</h4>
+                                    <p class="film-genre">Comedy, Horror</p>
+                                    <div class="film-date">Oct 31, 2025</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-primary view-all-btn">View All Films</button>
+                </div>
             </div>
         </div>
 
@@ -1540,4 +2021,3 @@
         init();
     </script>
 </body>
-</html>
