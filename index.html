@@ -851,25 +851,17 @@
             <div class="sidebar-section">
                 <div class="section-header">Popular Threads</div>
                 <div class="section-content" id="popularThreads">
-                    <div class="list-item" onclick="openThread(1)">
+                    <div class="list-item" onclick="openThreadFromSidebar(1)">
                         <div class="item-title">Best Films of 2025 Discussion</div>
                         <div class="item-count">234</div>
                     </div>
-                    <div class="list-item" onclick="openThread(2)">
+                    <div class="list-item" onclick="openThreadFromSidebar(2)">
                         <div class="item-title">Underrated Horror Gems</div>
                         <div class="item-count">89</div>
                     </div>
-                    <div class="list-item" onclick="openThread(3)">
+                    <div class="list-item" onclick="openThreadFromSidebar(3)">
                         <div class="item-title">Nolan's Visual Evolution</div>
                         <div class="item-count">156</div>
-                    </div>
-                    <div class="list-item" onclick="openThread(4)">
-                        <div class="item-title">Film Festivals 2025</div>
-                        <div class="item-count">67</div>
-                    </div>
-                    <div class="list-item" onclick="openThread(5)">
-                        <div class="item-title">Criterion Collection Update</div>
-                        <div class="item-count">203</div>
                     </div>
                 </div>
             </div>
@@ -1394,15 +1386,23 @@
 
         // Page navigation
         function showPage(pageId) {
-            document.querySelectorAll('.page').forEach(page => {
-                page.classList.remove('active');
+        document.querySelectorAll('.page').forEach(page => {
+            page.classList.remove('active');
             });
-            document.getElementById(pageId + '-page').classList.add('active');
+            
+            const targetPage = document.getElementById(pageId + '-page');
+            if (targetPage) {
+                targetPage.classList.add('active');
+            }
             
             document.querySelectorAll('.nav-links a').forEach(link => {
                 link.classList.remove('active');
             });
-            document.getElementById(pageId + '-nav').classList.add('active');
+            
+            const targetNav = document.getElementById(pageId + '-nav');
+            if (targetNav) {
+                targetNav.classList.add('active');
+            }
             
             if (pageId === 'profile') {
                 updateProfileDisplay();
@@ -1576,6 +1576,15 @@
             updateThreadDetail(thread);
             updateCommentsList(threadId);
             showPage('thread-detail');
+        }
+
+        function openThreadFromSidebar(threadId) {
+            const thread = forumData.threads.find(t => t.id === threadId);
+            if (!thread) return;
+            
+            setTimeout(() => {
+                openThread(threadId);
+            }, 100);
         }
 
         function updateThreadDetail(thread) {
@@ -2091,4 +2100,3 @@
     </script>
 </body>
 </html>
-
