@@ -1,14 +1,601 @@
-// Main application logic
+// Updated main.js with Supabase integration
 let currentForumId = null;
 let currentThreadId = null;
 
-function init() {
-    loadUserData();
-    loadForumData();
-    initializeSampleForums();
-    updateProfileStats();
-    updateForumsList();
+async function init() {
+    // Initialize authentication first
+    await initAuth();
+    
+    // Load forum data from Supabase
+    await loadForumDataFromSupabase();
+    
+    // Setup search and other components
     setupSearch();
+    updateSidebarContent();
+}
+
+async function loadForumDataFromSupabase() {
+    try {
+        // Load forums
+        const { data: forums, error: forumsError } = await db.getForums();
+        if (!forumsError && forums) {
+            forumData.forums = forums.map(forum => ({
+                id: forum.id,
+                title: forum.title,
+                description: forum.description,
+                createdBy: forum.profiles?.display_name || forum.profiles?.username || 'Unknown',
+                createdAt: forum.created_at,
+                threadCount: forum.thread_count,
+                postCount: forum.post_count
+            }));
+        }
+        
+        // If no forums exist, create sample forums
+        if (forumData.forums.length === 0 && currentUser) {
+            await createSampleForums();
+        }
+        
+        // Load threads and comments for popular content
+        await loadPopularContent();
+        
+    } catch (error) {
+        console.error('Error loading forum data:', error);
+        // Fall back to sample data if there's an error
+        initializeSampleForums();
+    }
+    
+    updateForumsList();
+}
+
+async function createSampleForums() {
+    const sampleForums = [
+        {
+            title: "General Discussion",
+            description: "General movie discussions and recommendations"
+        },
+        {
+            title: "New Releases",
+            description: "Discuss the latest movies hitting theaters"
+        },
+        {
+            title: "Classic Cinema",
+            description: "Celebrating timeless films and directors"
+        }
+    ];
+    
+    for (const forum of sampleForums) {
+        const { data, error } = await db.createForum(forum.title, forum.description);
+        if (!error && data) {
+            forumData.forums.push({
+                id: data.id,
+                title: data.title,
+                description: data.description,
+                createdBy: currentUser.profile?.display_name || currentUser.profile?.username || 'User',
+                createdAt: data.created_at,
+                threadCount: 0,
+                postCount: 0
+            });
+        }
+    }
+}
+
+async function loadPopularContent() {
+    try {
+        // Load threads for popular content sidebar
+        const allThreads = [];
+        for (const forum of forumData.forums) {
+            const { data: threads, error } = await db.getThreads(forum.id);
+            if (!error && threads) {
+                allThreads.push(...threads.map(thread => ({
+                    id: thread.id,
+                    forumId: thread.forum_id,
+                    title: thread.title,
+                    content: thread.content,
+                    author: thread.profiles?.display_name || thread.profiles?.username || 'Unknown',
+                    createdAt: thread.created_at,
+                    votes: thread.votes,
+                    commentCount: thread.comment_count
+                })));
+            }
+        }
+        
+        forumData.threads = allThreads;
+        
+    } catch (error) {
+        console.error('Error loading popular content:', error);
+    }
+}
+
+function updateSidebarContent() {
+    updatePopularThreads();
+    updateRecentDiscussion();
+}
+
+function updatePopularThreads() {
+    const popularThreadsEl = document.getElementById('popularThreads');
+    if (!popularThreadsEl) return;
+    
+    const topThreads = forumData.threads
+        .sort((a, b) => b.votes - a.votes)
+        .slice(0, 5);
+    
+    if (topThreads.length === 0) {
+        popularThreadsEl.innerHTML = '<div class="list-item"><div class="item-title">No threads yet</div></div>';
+        return;
+    }
+    
+    const html = topThreads.map(thread => `
+        <div class="list-item" onclick="openThreadFromSidebar(${thread.id})">
+            <div class="item-title">${thread.title}</div>
+            <div class="item-count">${thread.votes}</div>
+        </div>
+    `).join('');
+    
+    popularThreadsEl.innerHTML = html;
+}
+
+function updateRecentDiscussion() {
+    const recentDiscussionEl = document.getElementById('recentDiscussion');
+    if (!recentDiscussionEl) return;
+    
+    const recentThreads = forumData.threads
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        .slice(0, 5);
+    
+    if (recentThreads.length === 0) {
+        recentDiscussionEl.innerHTML = '<div class="list-item"><div class="item-title">No recent discussions</div></div>';
+        return;
+    }
+    
+    const html = recentThreads.map(thread => `
+        <div class="list-item" onclick="openThreadFromSidebar(${thread.id})">
+            <div class="item-title">${thread.title}</div>
+            <div class="item-count">${timeAgo(thread.createdAt)}</div>
+        </div>
+    `).join('');
+    
+    recentDiscussionEl.innerHTML = html;
+}
+
+// Updated forum functions to work with Supabase
+async function createForum() {
+    if (!currentUser) {
+        showAuthMessage('Please login to create a forum', true);
+        showPage('auth');
+        return;
+    }
+    
+    const title = document.getElementById('forumTitle').value.trim();
+    const description = document.getElementById('forumDescription').value.trim();
+
+    if (!title) {
+        alert('Please enter a forum title');
+        return;
+    }
+
+    try {
+        const { data, error } = await db.createForum(title, description);
+        if (error) throw error;
+        
+        const newForum = {
+            id: data.id,
+            title: data.title,
+            description: data.description,
+            createdBy: currentUser.profile?.display_name || currentUser.profile?.username || 'User',
+            createdAt: data.created_at,
+            threadCount: 0,
+            postCount: 0
+        };
+
+        forumData.forums.push(newForum);
+        updateForumsList();
+        hideCreateForumForm();
+        
+    } catch (error) {
+        console.error('Error creating forum:', error);
+        alert('Failed to create forum. Please try again.');
+    }
+}
+
+async function createThread() {
+    if (!currentUser) {
+        showAuthMessage('Please login to create a thread', true);
+        showPage('auth');
+        return;
+    }
+    
+    const title = document.getElementById('threadTitle').value.trim();
+    const content = document.getElementById('threadContent').value.trim();
+
+    if (!title || !content) {
+        alert('Please enter both title and content');
+        return;
+    }
+
+    try {
+        const { data, error } = await db.createThread(currentForumId, title, content);
+        if (error) throw error;
+        
+        const newThread = {
+            id: data.id,
+            forumId: data.forum_id,
+            title: data.title,
+            content: data.content,
+            author: currentUser.profile?.display_name || currentUser.profile?.username || 'User',
+            createdAt: data.created_at,
+            votes: 0,
+            commentCount: 0
+        };
+
+        forumData.threads.push(newThread);
+        
+        // Update forum thread count
+        const forum = forumData.forums.find(f => f.id === currentForumId);
+        if (forum) forum.threadCount++;
+        
+        updateThreadsList(currentForumId);
+        hideCreateThreadForm();
+        updateSidebarContent();
+        
+    } catch (error) {
+        console.error('Error creating thread:', error);
+        alert('Failed to create thread. Please try again.');
+    }
+}
+
+async function addComment() {
+    if (!currentUser) {
+        showAuthMessage('Please login to comment', true);
+        showPage('auth');
+        return;
+    }
+    
+    const content = document.getElementById('newCommentText').value.trim();
+    
+    if (!content) {
+        alert('Please enter a comment');
+        return;
+    }
+
+    try {
+        const { data, error } = await db.createComment(currentThreadId, content);
+        if (error) throw error;
+        
+        const newComment = {
+            id: data.id,
+            threadId: data.thread_id,
+            parentId: data.parent_id,
+            content: data.content,
+            author: currentUser.profile?.display_name || currentUser.profile?.username || 'User',
+            createdAt: data.created_at,
+            votes: 0
+        };
+
+        forumData.comments.push(newComment);
+        
+        // Update thread comment count
+        const thread = forumData.threads.find(t => t.id === currentThreadId);
+        if (thread) thread.commentCount++;
+        
+        updateCommentsList(currentThreadId);
+        document.getElementById('newCommentText').value = '';
+        
+    } catch (error) {
+        console.error('Error adding comment:', error);
+        alert('Failed to add comment. Please try again.');
+    }
+}
+
+async function addReply(parentId) {
+    if (!currentUser) {
+        showAuthMessage('Please login to reply', true);
+        showPage('auth');
+        return;
+    }
+    
+    const content = document.getElementById(`replyText-${parentId}`).value.trim();
+    
+    if (!content) {
+        alert('Please enter a reply');
+        return;
+    }
+
+    try {
+        const { data, error } = await db.createComment(currentThreadId, content, parentId);
+        if (error) throw error;
+        
+        const newComment = {
+            id: data.id,
+            threadId: data.thread_id,
+            parentId: data.parent_id,
+            content: data.content,
+            author: currentUser.profile?.display_name || currentUser.profile?.username || 'User',
+            createdAt: data.created_at,
+            votes: 0
+        };
+
+        forumData.comments.push(newComment);
+        
+        // Update thread comment count
+        const thread = forumData.threads.find(t => t.id === currentThreadId);
+        if (thread) thread.commentCount++;
+        
+        updateCommentsList(currentThreadId);
+        hideReplyForm(parentId);
+        
+    } catch (error) {
+        console.error('Error adding reply:', error);
+        alert('Failed to add reply. Please try again.');
+    }
+}
+
+async function vote(type, id, direction, event) {
+    if (!currentUser) {
+        showAuthMessage('Please login to vote', true);
+        showPage('auth');
+        return;
+    }
+    
+    if (event) {
+        event.stopPropagation();
+    }
+    
+    try {
+        const { error } = await db.vote(type, id, direction);
+        if (error) throw error;
+        
+        // Refresh the current view to show updated votes
+        await refreshCurrentView();
+        
+    } catch (error) {
+        console.error('Error voting:', error);
+        alert('Failed to vote. Please try again.');
+    }
+}
+
+async function refreshCurrentView() {
+    // Reload forum data to get updated vote counts
+    await loadForumDataFromSupabase();
+    
+    // Refresh the appropriate view
+    if (document.getElementById('thread-detail-page').classList.contains('active')) {
+        const thread = forumData.threads.find(t => t.id === currentThreadId);
+        if (thread) {
+            updateThreadDetail(thread);
+            await loadAndDisplayComments(currentThreadId);
+        }
+    } else if (document.getElementById('forum-threads-page').classList.contains('active')) {
+        updateThreadsList(currentForumId);
+    }
+    
+    updateSidebarContent();
+}
+
+async function showForumThreads(forumId) {
+    currentForumId = forumId;
+    const forum = forumData.forums.find(f => f.id === forumId);
+    
+    if (!forum) return;
+
+    document.getElementById('currentForumName').textContent = forum.title;
+    document.getElementById('forumBreadcrumbLink').textContent = forum.title;
+    
+    await loadThreadsForForum(forumId);
+    showPage('forum-threads');
+}
+
+async function loadThreadsForForum(forumId) {
+    try {
+        const { data: threads, error } = await db.getThreads(forumId);
+        if (error) throw error;
+        
+        const threadsForForum = threads.map(thread => ({
+            id: thread.id,
+            forumId: thread.forum_id,
+            title: thread.title,
+            content: thread.content,
+            author: thread.profiles?.display_name || thread.profiles?.username || 'Unknown',
+            createdAt: thread.created_at,
+            votes: thread.votes,
+            commentCount: thread.comment_count
+        }));
+        
+        // Update forumData threads for this forum
+        forumData.threads = forumData.threads.filter(t => t.forumId !== forumId);
+        forumData.threads.push(...threadsForForum);
+        
+        updateThreadsList(forumId);
+        
+    } catch (error) {
+        console.error('Error loading threads:', error);
+        updateThreadsList(forumId); // Show what we have locally
+    }
+}
+
+async function openThread(threadId) {
+    currentThreadId = threadId;
+    
+    try {
+        const { data: thread, error } = await db.getThread(threadId);
+        if (error) throw error;
+        
+        const threadData = {
+            id: thread.id,
+            forumId: thread.forum_id,
+            title: thread.title,
+            content: thread.content,
+            author: thread.profiles?.display_name || thread.profiles?.username || 'Unknown',
+            createdAt: thread.created_at,
+            votes: thread.votes,
+            commentCount: thread.comment_count
+        };
+        
+        const forum = thread.forums;
+        currentForumId = thread.forum_id;
+
+        document.getElementById('currentThreadTitle').textContent = threadData.title;
+        document.getElementById('forumBreadcrumbLink').textContent = forum.title;
+        document.getElementById('forumBreadcrumbLink').onclick = () => showForumThreads(forum.id || currentForumId);
+        
+        updateThreadDetail(threadData);
+        await loadAndDisplayComments(threadId);
+        showPage('thread-detail');
+        
+    } catch (error) {
+        console.error('Error opening thread:', error);
+        // Fall back to local data
+        const thread = forumData.threads.find(t => t.id === threadId);
+        if (thread) {
+            const forum = forumData.forums.find(f => f.id === thread.forumId);
+            currentForumId = forum.id;
+            document.getElementById('currentThreadTitle').textContent = thread.title;
+            document.getElementById('forumBreadcrumbLink').textContent = forum.title;
+            updateThreadDetail(thread);
+            updateCommentsList(threadId);
+            showPage('thread-detail');
+        }
+    }
+}
+
+async function loadAndDisplayComments(threadId) {
+    try {
+        const { data: comments, error } = await db.getComments(threadId);
+        if (error) throw error;
+        
+        const commentsData = comments.map(comment => ({
+            id: comment.id,
+            threadId: comment.thread_id,
+            parentId: comment.parent_id,
+            content: comment.content,
+            author: comment.profiles?.display_name || comment.profiles?.username || 'Unknown',
+            createdAt: comment.created_at,
+            votes: comment.votes
+        }));
+        
+        // Update forumData comments for this thread
+        forumData.comments = forumData.comments.filter(c => c.threadId !== threadId);
+        forumData.comments.push(...commentsData);
+        
+        updateCommentsList(threadId);
+        
+    } catch (error) {
+        console.error('Error loading comments:', error);
+        updateCommentsList(threadId); // Show what we have locally
+    }
+}
+
+// Updated user data loading
+async function loadUserData() {
+    if (!currentUser) {
+        userData = {
+            name: 'Guest',
+            watchedFilms: [],
+            reviews: []
+        };
+        return;
+    }
+    
+    try {
+        // Load watched movies
+        const { data: watchedMovies, error: watchedError } = await db.getUserWatchedMovies(currentUser.id);
+        if (!watchedError && watchedMovies) {
+            userData.watchedFilms = watchedMovies.map(item => ({
+                id: item.movie_id,
+                title: item.movies.title,
+                year: item.movies.year,
+                poster: item.movies.poster_url,
+                watchedDate: item.watched_date
+            }));
+        }
+        
+        // Load reviews
+        const { data: reviews, error: reviewsError } = await db.getUserReviews(currentUser.id);
+        if (!reviewsError && reviews) {
+            userData.reviews = reviews.map(review => ({
+                movieId: review.movie_id,
+                title: review.movies.title,
+                year: review.movies.year,
+                poster: review.movies.poster_url,
+                rating: review.rating,
+                text: review.review_text,
+                date: review.created_at
+            }));
+        }
+        
+        updateProfileStats();
+        
+    } catch (error) {
+        console.error('Error loading user data:', error);
+    }
+}
+
+// Updated movie interaction functions
+async function toggleWatched(movieId) {
+    if (!currentUser) {
+        showAuthMessage('Please login to track movies', true);
+        showPage('auth');
+        return;
+    }
+    
+    const movie = await fetchMovieDetails(movieId);
+    if (!movie) return;
+    
+    try {
+        const { data: isNowWatched, error } = await db.toggleWatchedMovie(movieId, movie);
+        if (error) throw error;
+        
+        const watchBtn = document.getElementById(`watchBtn-${movieId}`);
+        if (watchBtn) {
+            watchBtn.textContent = isNowWatched ? '✓ Watched' : '+ Add to Watched';
+        }
+        
+        // Reload user data to update the UI
+        await loadUserData();
+        
+    } catch (error) {
+        console.error('Error toggling watched status:', error);
+        alert('Failed to update watched status. Please try again.');
+    }
+}
+
+async function saveReview(movieId) {
+    if (!currentUser) {
+        showAuthMessage('Please login to write reviews', true);
+        showPage('auth');
+        return;
+    }
+    
+    const movie = await fetchMovieDetails(movieId);
+    if (!movie) return;
+    
+    const reviewText = document.getElementById(`reviewText-${movieId}`).value.trim();
+    const ratingStars = document.querySelectorAll(`[data-movie-id="${movieId}"] span.active`);
+    const rating = ratingStars.length;
+
+    if (rating === 0) {
+        alert('Please select a rating');
+        return;
+    }
+
+    try {
+        const { error } = await db.saveReview(movieId, movie, rating, reviewText);
+        if (error) throw error;
+        
+        toggleReviewForm(movieId);
+        
+        // Update the button text
+        const reviewBtn = document.querySelector(`button[onclick="toggleReviewForm(${movieId})"]`);
+        if (reviewBtn) {
+            reviewBtn.textContent = 'Edit Review';
+        }
+        
+        // Reload user data to update the UI
+        await loadUserData();
+        
+    } catch (error) {
+        console.error('Error saving review:', error);
+        alert('Failed to save review. Please try again.');
+    }
 }
 
 // Page navigation
@@ -35,6 +622,11 @@ function showPage(pageId) {
         updateProfileDisplay();
     } else if (pageId === 'forums') {
         updateForumsList();
+    }
+    
+    // Hide auth message when navigating away from auth page
+    if (pageId !== 'auth') {
+        hideAuthMessage();
     }
 }
 
