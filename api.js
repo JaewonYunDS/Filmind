@@ -55,8 +55,26 @@ async function showMovieDetail(movieId) {
     document.getElementById('searchResults').classList.add('hidden');
     document.getElementById('searchInput').value = '';
 
-    const isWatched = userData.watchedFilms.some(f => f.id === movieId);
-    const userReview = userData.reviews.find(r => r.movieId === movieId);
+    // Check if user is authenticated and get their data for this movie
+    let isWatched = false;
+    let userReview = null;
+    
+    if (currentUser) {
+        try {
+            const { isWatched: watched, review } = await db.getMovieUserData(movieId, currentUser.id);
+            isWatched = watched;
+            userReview = review;
+        } catch (error) {
+            console.warn('Could not load user movie data:', error);
+            // Fall back to local data
+            isWatched = userData.watchedFilms.some(f => f.id === movieId);
+            userReview = userData.reviews.find(r => r.movieId === movieId);
+        }
+    } else {
+        // Use local data for unauthenticated users
+        isWatched = userData.watchedFilms.some(f => f.id === movieId);
+        userReview = userData.reviews.find(r => r.movieId === movieId);
+    }
 
     const actors = movie.credits?.cast?.slice(0, 5).map(actor => actor.name).join(', ') || 'Unknown';
 
@@ -85,7 +103,7 @@ async function showMovieDetail(movieId) {
                     <div class="star-rating" data-movie-id="${movie.id}">
                         ${[1,2,3,4,5].map(i => `<span onclick="setRating(${movie.id}, ${i})" data-rating="${i}">★</span>`).join('')}
                     </div>
-                    <textarea class="review-textarea" placeholder="Write your review..." id="reviewText-${movie.id}">${userReview ? userReview.text : ''}</textarea>
+                    <textarea class="review-textarea" placeholder="Write your review..." id="reviewText-${movie.id}">${userReview ? userReview.review_text || userReview.text || '' : ''}</textarea>
                     <div class="action-buttons">
                         <button class="btn btn-primary" onclick="saveReview(${movie.id})">Save Review</button>
                         <button class="btn btn-secondary" onclick="toggleReviewForm(${movie.id})">Cancel</button>
@@ -108,7 +126,10 @@ async function showMovieDetail(movieId) {
     document.getElementById('movieContent').innerHTML = movieHtml;
 
     if (userReview) {
-        setRatingDisplay(movie.id, userReview.rating);
+        const rating = userReview.rating;
+        if (rating) {
+            setRatingDisplay(movie.id, rating);
+        }
     }
 
     showPage('movie');
@@ -117,6 +138,8 @@ async function showMovieDetail(movieId) {
 function setupSearch() {
     const searchInput = document.getElementById('searchInput');
     const searchResults = document.getElementById('searchResults');
+
+    if (!searchInput || !searchResults) return;
 
     searchInput.addEventListener('input', async function(e) {
         const query = e.target.value.trim();
@@ -146,6 +169,9 @@ function setupSearch() {
 }
 
 function displaySearchResults(results) {
+    const searchResults = document.getElementById('searchResults');
+    if (!searchResults) return;
+    
     if (results.length === 0) {
         searchResults.innerHTML = '<div style="padding: 1rem; color: #999;">No results found.</div>';
         searchResults.classList.remove('hidden');

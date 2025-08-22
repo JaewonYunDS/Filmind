@@ -1,10 +1,12 @@
+// profile.js - User profile management (local fallback functions)
 let userData = {
-    name: 'CineUser',
+    name: 'Guest',
     watchedFilms: [],
     reviews: []
 };
 
-function loadUserData() {
+// Local fallback functions for when Supabase is not available
+function loadUserDataLocal() {
     try {
         const saved = JSON.parse(JSON.stringify(userData));
         userData = saved;
@@ -13,11 +15,12 @@ function loadUserData() {
     }
 }
 
-function saveUserData() {
-    console.log('User data saved');
+function saveUserDataLocal() {
+    console.log('User data saved locally');
 }
 
-async function toggleWatched(movieId) {
+// Local fallback for toggle watched (used when not authenticated with Supabase)
+async function toggleWatchedLocal(movieId) {
     const movie = await fetchMovieDetails(movieId);
     if (!movie) return;
     
@@ -37,13 +40,15 @@ async function toggleWatched(movieId) {
         document.getElementById(`watchBtn-${movieId}`).textContent = '+ Add to Watched';
     }
 
-    saveUserData();
+    saveUserDataLocal();
     updateProfileStats();
 }
 
 function toggleReviewForm(movieId) {
     const form = document.getElementById(`reviewForm-${movieId}`);
-    form.classList.toggle('hidden');
+    if (form) {
+        form.classList.toggle('hidden');
+    }
 }
 
 function setRating(movieId, rating) {
@@ -57,7 +62,8 @@ function setRatingDisplay(movieId, rating) {
     });
 }
 
-async function saveReview(movieId) {
+// Local fallback for save review
+async function saveReviewLocal(movieId) {
     const movie = await fetchMovieDetails(movieId);
     if (!movie) return;
     
@@ -76,32 +82,39 @@ async function saveReview(movieId) {
         movieId: movieId,
         title: movie.title,
         year: movie.year,
-        poster: mock.poster,
+        poster: movie.poster,
         rating: rating,
         text: reviewText,
         date: new Date().toISOString()
     });
 
     if (!userData.watchedFilms.some(f => f.id === movieId)) {
-        await toggleWatched(movieId);
+        await toggleWatchedLocal(movieId);
     }
 
     toggleReviewForm(movieId);
-    saveUserData();
+    saveUserDataLocal();
     updateProfileStats();
 
-    document.querySelector(`button[onclick="toggleReviewForm(${movieId})"]`).textContent = 'Edit Review';
+    const reviewBtn = document.querySelector(`button[onclick="toggleReviewForm(${movieId})"]`);
+    if (reviewBtn) {
+        reviewBtn.textContent = 'Edit Review';
+    }
 }
 
 function updateProfileStats() {
-    document.getElementById('filmCount').textContent = userData.watchedFilms.length;
-    document.getElementById('reviewCount').textContent = userData.reviews.length;
+    const filmCountEl = document.getElementById('filmCount');
+    const reviewCountEl = document.getElementById('reviewCount');
+    const avgRatingEl = document.getElementById('avgRating');
+    
+    if (filmCountEl) filmCountEl.textContent = userData.watchedFilms.length;
+    if (reviewCountEl) reviewCountEl.textContent = userData.reviews.length;
 
     if (userData.reviews.length > 0) {
         const avgRating = userData.reviews.reduce((sum, review) => sum + review.rating, 0) / userData.reviews.length;
-        document.getElementById('avgRating').textContent = avgRating.toFixed(1);
+        if (avgRatingEl) avgRatingEl.textContent = avgRating.toFixed(1);
     } else {
-        document.getElementById('avgRating').textContent = '0.0';
+        if (avgRatingEl) avgRatingEl.textContent = '0.0';
     }
 }
 
@@ -112,6 +125,7 @@ function updateProfileDisplay() {
 
 function displayUserFilms() {
     const filmsGrid = document.getElementById('userFilms');
+    if (!filmsGrid) return;
 
     if (userData.watchedFilms.length === 0) {
         filmsGrid.innerHTML = '<p style="text-align: center; color: #999; grid-column: 1/-1;">No films logged yet. Start by searching for movies!</p>';

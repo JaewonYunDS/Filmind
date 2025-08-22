@@ -128,6 +128,7 @@ function initializeSampleForums() {
 
 function updateForumsList() {
     const forumsList = document.getElementById('forumsList');
+    if (!forumsList) return;
     
     if (forumData.forums.length === 0) {
         forumsList.innerHTML = '<p style="text-align: center; color: #999; padding: 2rem;">No forums yet. Create the first one!</p>';
@@ -139,9 +140,9 @@ function updateForumsList() {
             <div class="forum-title">${forum.title}</div>
             <div class="forum-description">${forum.description}</div>
             <div class="forum-stats">
-                <span>${forum.threadCount} threads</span>
+                <span>${forum.threadCount || 0} threads</span>
                 <span>•</span>
-                <span>${forum.postCount} posts</span>
+                <span>${forum.postCount || 0} posts</span>
                 <span>•</span>
                 <span>Created by ${forum.createdBy}</span>
             </div>
@@ -152,55 +153,28 @@ function updateForumsList() {
 }
 
 function showCreateForumForm() {
-    document.getElementById('createForumForm').classList.remove('hidden');
+    const form = document.getElementById('createForumForm');
+    if (form) {
+        form.classList.remove('hidden');
+    }
 }
 
 function hideCreateForumForm() {
-    document.getElementById('createForumForm').classList.add('hidden');
-    document.getElementById('forumTitle').value = '';
-    document.getElementById('forumDescription').value = '';
-}
-
-function createForum() {
-    const title = document.getElementById('forumTitle').value.trim();
-    const description = document.getElementById('forumDescription').value.trim();
-
-    if (!title) {
-        alert('Please enter a forum title');
-        return;
+    const form = document.getElementById('createForumForm');
+    if (form) {
+        form.classList.add('hidden');
     }
-
-    const newForum = {
-        id: forumData.forums.length > 0 ? Math.max(...forumData.forums.map(f => f.id)) + 1 : 1,
-        title: title,
-        description: description || 'No description provided',
-        createdBy: userData.name,
-        createdAt: new Date().toISOString(),
-        threadCount: 0,
-        postCount: 0
-    };
-
-    forumData.forums.push(newForum);
-    saveForumData();
-    updateForumsList();
-    hideCreateForumForm();
-}
-
-function showForumThreads(forumId) {
-    currentForumId = forumId;
-    const forum = forumData.forums.find(f => f.id === forumId);
     
-    if (!forum) return;
-
-    document.getElementById('currentForumName').textContent = forum.title;
-    document.getElementById('forumBreadcrumbLink').textContent = forum.title;
-    
-    updateThreadsList(forumId);
-    showPage('forum-threads');
+    const titleInput = document.getElementById('forumTitle');
+    const descInput = document.getElementById('forumDescription');
+    if (titleInput) titleInput.value = '';
+    if (descInput) descInput.value = '';
 }
 
 function updateThreadsList(forumId) {
     const threadsList = document.getElementById('threadsList');
+    if (!threadsList) return;
+    
     const threads = forumData.threads.filter(t => t.forumId === forumId)
         .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
@@ -215,7 +189,7 @@ function updateThreadsList(forumId) {
             <div class="thread-item" onclick="openThread(${thread.id})">
                 <div class="thread-votes">
                     <button class="vote-btn ${userVote === 'up' ? 'upvoted' : ''}" onclick="vote('thread', ${thread.id}, 'up', event)">▲</button>
-                    <div class="vote-count">${thread.votes}</div>
+                    <div class="vote-count">${thread.votes || 0}</div>
                     <button class="vote-btn ${userVote === 'down' ? 'downvoted' : ''}" onclick="vote('thread', ${thread.id}, 'down', event)">▼</button>
                 </div>
                 <div class="thread-content">
@@ -223,7 +197,7 @@ function updateThreadsList(forumId) {
                     <div class="thread-meta">Posted by ${thread.author} • ${timeAgo(thread.createdAt)}</div>
                     <div class="thread-preview">${thread.content.substring(0, 200)}${thread.content.length > 200 ? '...' : ''}</div>
                     <div class="thread-stats">
-                        <span>${thread.commentCount} comments</span>
+                        <span>${thread.commentCount || 0} comments</span>
                     </div>
                 </div>
             </div>
@@ -234,70 +208,22 @@ function updateThreadsList(forumId) {
 }
 
 function showCreateThreadForm() {
-    document.getElementById('createThreadForm').classList.remove('hidden');
+    const form = document.getElementById('createThreadForm');
+    if (form) {
+        form.classList.remove('hidden');
+    }
 }
 
 function hideCreateThreadForm() {
-    document.getElementById('createThreadForm').classList.add('hidden');
-    document.getElementById('threadTitle').value = '';
-    document.getElementById('threadContent').value = '';
-}
-
-function createThread() {
-    const title = document.getElementById('threadTitle').value.trim();
-    const content = document.getElementById('threadContent').value.trim();
-
-    if (!title || !content) {
-        alert('Please enter both title and content');
-        return;
+    const form = document.getElementById('createThreadForm');
+    if (form) {
+        form.classList.add('hidden');
     }
-
-    const newThread = {
-        id: forumData.threads.length > 0 ? Math.max(...forumData.threads.map(t => t.id)) + 1 : 1,
-        forumId: currentForumId,
-        title: title,
-        content: content,
-        author: userData.name,
-        createdAt: new Date().toISOString(),
-        votes: 0,
-        commentCount: 0
-    };
-
-    forumData.threads.push(newThread);
     
-    const forum = forumData.forums.find(f => f.id === currentForumId);
-    if (forum) forum.threadCount++;
-    
-    saveForumData();
-    updateThreadsList(currentForumId);
-    hideCreateThreadForm();
-}
-
-function openThread(threadId) {
-    currentThreadId = threadId;
-    const thread = forumData.threads.find(t => t.id === threadId);
-    
-    if (!thread) return;
-
-    const forum = forumData.forums.find(f => f.id === thread.forumId);
-    currentForumId = forum.id;
-
-    document.getElementById('currentThreadTitle').textContent = thread.title;
-    document.getElementById('forumBreadcrumbLink').textContent = forum.title;
-    document.getElementById('forumBreadcrumbLink').onclick = () => showForumThreads(forum.id);
-    
-    updateThreadDetail(thread);
-    updateCommentsList(threadId);
-    showPage('thread-detail');
-}
-
-function openThreadFromSidebar(threadId) {
-    const thread = forumData.threads.find(t => t.id === threadId);
-    if (!thread) return;
-    
-    setTimeout(() => {
-        openThread(threadId);
-    }, 100);
+    const titleInput = document.getElementById('threadTitle');
+    const contentInput = document.getElementById('threadContent');
+    if (titleInput) titleInput.value = '';
+    if (contentInput) contentInput.value = '';
 }
 
 function updateThreadDetail(thread) {
@@ -306,7 +232,7 @@ function updateThreadDetail(thread) {
         <div style="display: flex; gap: 1rem; margin-bottom: 2rem;">
             <div class="thread-votes">
                 <button class="vote-btn ${userVote === 'up' ? 'upvoted' : ''}" onclick="vote('thread', ${thread.id}, 'up', event)">▲</button>
-                <div class="vote-count">${thread.votes}</div>
+                <div class="vote-count">${thread.votes || 0}</div>
                 <button class="vote-btn ${userVote === 'down' ? 'downvoted' : ''}" onclick="vote('thread', ${thread.id}, 'down', event)">▼</button>
             </div>
             <div style="flex: 1;">
@@ -321,7 +247,10 @@ function updateThreadDetail(thread) {
         </div>
     `;
     
-    document.getElementById('threadDetail').innerHTML = html;
+    const threadDetail = document.getElementById('threadDetail');
+    if (threadDetail) {
+        threadDetail.innerHTML = html;
+    }
 }
 
 function updateCommentsList(threadId) {
@@ -329,6 +258,7 @@ function updateCommentsList(threadId) {
         .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
 
     const commentsSection = document.getElementById('commentsSection');
+    if (!commentsSection) return;
     
     if (comments.length === 0) {
         commentsSection.innerHTML = '<p style="text-align: center; color: #999; padding: 2rem;">No comments yet. Be the first to comment!</p>';
@@ -355,7 +285,7 @@ function renderComment(comment, allComments, isReply = false) {
             <div class="comment-actions">
                 <div class="comment-votes">
                     <button class="vote-btn ${userVote === 'up' ? 'upvoted' : ''}" onclick="vote('comment', ${comment.id}, 'up', event)">▲</button>
-                    <span class="vote-count">${comment.votes}</span>
+                    <span class="vote-count">${comment.votes || 0}</span>
                     <button class="vote-btn ${userVote === 'down' ? 'downvoted' : ''}" onclick="vote('comment', ${comment.id}, 'down', event)">▼</button>
                 </div>
                 <button class="reply-btn" onclick="showReplyForm(${comment.id})">Reply</button>
@@ -377,72 +307,27 @@ function renderComment(comment, allComments, isReply = false) {
     return html;
 }
 
-function addComment() {
-    const content = document.getElementById('newCommentText').value.trim();
-    
-    if (!content) {
-        alert('Please enter a comment');
-        return;
-    }
-
-    const newComment = {
-        id: forumData.comments.length > 0 ? Math.max(...forumData.comments.map(c => c.id)) + 1 : 1,
-        threadId: currentThreadId,
-        parentId: null,
-        content: content,
-        author: userData.name,
-        createdAt: new Date().toISOString(),
-        votes: 0
-    };
-
-    forumData.comments.push(newComment);
-    
-    const thread = forumData.threads.find(t => t.id === currentThreadId);
-    if (thread) thread.commentCount++;
-    
-    saveForumData();
-    updateCommentsList(currentThreadId);
-    document.getElementById('newCommentText').value = '';
-}
-
 function showReplyForm(commentId) {
-    document.getElementById(`replyForm-${commentId}`).classList.remove('hidden');
+    const form = document.getElementById(`replyForm-${commentId}`);
+    if (form) {
+        form.classList.remove('hidden');
+    }
 }
 
 function hideReplyForm(commentId) {
-    document.getElementById(`replyForm-${commentId}`).classList.add('hidden');
-    document.getElementById(`replyText-${commentId}`).value = '';
-}
-
-function addReply(parentId) {
-    const content = document.getElementById(`replyText-${parentId}`).value.trim();
-    
-    if (!content) {
-        alert('Please enter a reply');
-        return;
+    const form = document.getElementById(`replyForm-${commentId}`);
+    if (form) {
+        form.classList.add('hidden');
     }
-
-    const newComment = {
-        id: forumData.comments.length > 0 ? Math.max(...forumData.comments.map(c => c.id)) + 1 : 1,
-        threadId: currentThreadId,
-        parentId: parentId,
-        content: content,
-        author: userData.name,
-        createdAt: new Date().toISOString(),
-        votes: 0
-    };
-
-    forumData.comments.push(newComment);
     
-    const thread = forumData.threads.find(t => t.id === currentThreadId);
-    if (thread) thread.commentCount++;
-    
-    saveForumData();
-    updateCommentsList(currentThreadId);
-    hideReplyForm(parentId);
+    const textArea = document.getElementById(`replyText-${commentId}`);
+    if (textArea) {
+        textArea.value = '';
+    }
 }
 
-function vote(type, id, direction, event) {
+// Local voting system (fallback when not using Supabase)
+function voteLocal(type, id, direction, event) {
     if (event) {
         event.stopPropagation();
     }
@@ -473,12 +358,12 @@ function vote(type, id, direction, event) {
     if (type === 'thread') {
         const thread = forumData.threads.find(t => t.id === id);
         if (thread) {
-            thread.votes += voteDelta;
+            thread.votes = (thread.votes || 0) + voteDelta;
         }
     } else if (type === 'comment') {
         const comment = forumData.comments.find(c => c.id === id);
         if (comment) {
-            comment.votes += voteDelta;
+            comment.votes = (comment.votes || 0) + voteDelta;
         }
     }
     
@@ -487,8 +372,10 @@ function vote(type, id, direction, event) {
     if (currentThreadId) {
         if (document.getElementById('thread-detail-page').classList.contains('active')) {
             const thread = forumData.threads.find(t => t.id === currentThreadId);
-            updateThreadDetail(thread);
-            updateCommentsList(currentThreadId);
+            if (thread) {
+                updateThreadDetail(thread);
+                updateCommentsList(currentThreadId);
+            }
         } else if (document.getElementById('forum-threads-page').classList.contains('active')) {
             updateThreadsList(currentForumId);
         }
@@ -498,4 +385,116 @@ function vote(type, id, direction, event) {
 function getUserVote(type, id) {
     const voteKey = `${type}_${id}`;
     return forumData.votes[voteKey] || null;
+}
+
+// Local functions for creating content when not authenticated
+function addCommentLocal() {
+    const content = document.getElementById('newCommentText').value.trim();
+    
+    if (!content) {
+        alert('Please enter a comment');
+        return;
+    }
+
+    const newComment = {
+        id: forumData.comments.length > 0 ? Math.max(...forumData.comments.map(c => c.id)) + 1 : 1,
+        threadId: currentThreadId,
+        parentId: null,
+        content: content,
+        author: userData.name,
+        createdAt: new Date().toISOString(),
+        votes: 0
+    };
+
+    forumData.comments.push(newComment);
+    
+    const thread = forumData.threads.find(t => t.id === currentThreadId);
+    if (thread) thread.commentCount = (thread.commentCount || 0) + 1;
+    
+    saveForumData();
+    updateCommentsList(currentThreadId);
+    document.getElementById('newCommentText').value = '';
+}
+
+function addReplyLocal(parentId) {
+    const content = document.getElementById(`replyText-${parentId}`).value.trim();
+    
+    if (!content) {
+        alert('Please enter a reply');
+        return;
+    }
+
+    const newComment = {
+        id: forumData.comments.length > 0 ? Math.max(...forumData.comments.map(c => c.id)) + 1 : 1,
+        threadId: currentThreadId,
+        parentId: parentId,
+        content: content,
+        author: userData.name,
+        createdAt: new Date().toISOString(),
+        votes: 0
+    };
+
+    forumData.comments.push(newComment);
+    
+    const thread = forumData.threads.find(t => t.id === currentThreadId);
+    if (thread) thread.commentCount = (thread.commentCount || 0) + 1;
+    
+    saveForumData();
+    updateCommentsList(currentThreadId);
+    hideReplyForm(parentId);
+}
+
+function createForumLocal() {
+    const title = document.getElementById('forumTitle').value.trim();
+    const description = document.getElementById('forumDescription').value.trim();
+
+    if (!title) {
+        alert('Please enter a forum title');
+        return;
+    }
+
+    const newForum = {
+        id: forumData.forums.length > 0 ? Math.max(...forumData.forums.map(f => f.id)) + 1 : 1,
+        title: title,
+        description: description || 'No description provided',
+        createdBy: userData.name,
+        createdAt: new Date().toISOString(),
+        threadCount: 0,
+        postCount: 0
+    };
+
+    forumData.forums.push(newForum);
+    saveForumData();
+    updateForumsList();
+    hideCreateForumForm();
+}
+
+function createThreadLocal() {
+    const title = document.getElementById('threadTitle').value.trim();
+    const content = document.getElementById('threadContent').value.trim();
+
+    if (!title || !content) {
+        alert('Please enter both title and content');
+        return;
+    }
+
+    const newThread = {
+        id: forumData.threads.length > 0 ? Math.max(...forumData.threads.map(t => t.id)) + 1 : 1,
+        forumId: currentForumId,
+        title: title,
+        content: content,
+        author: userData.name,
+        createdAt: new Date().toISOString(),
+        votes: 0,
+        commentCount: 0
+    };
+
+    forumData.threads.push(newThread);
+    
+    const forum = forumData.forums.find(f => f.id === currentForumId);
+    if (forum) forum.threadCount = (forum.threadCount || 0) + 1;
+    
+    saveForumData();
+    updateThreadsList(currentForumId);
+    hideCreateThreadForm();
 }
