@@ -11,119 +11,39 @@ function loadForumData() {
         const saved = JSON.parse(JSON.stringify(forumData));
         forumData = saved;
     } catch (e) {
-        console.log('No saved forum data found');
+        console.log('No saved forum data found, initializing with sample data');
+        // Initialize with sample comments for testing
+        forumData = {
+            forums: [],
+            threads: [],
+            comments: [
+                // Sample comment for threadId 1 (adjust threadId as needed)
+                {
+                    id: 1,
+                    threadId: 1,
+                    parentId: null,
+                    content: 'This is a sample comment for testing.',
+                    author: 'Guest',
+                    createdAt: new Date().toISOString(),
+                    votes: 5
+                },
+                {
+                    id: 2,
+                    threadId: 1,
+                    parentId: 1,
+                    content: 'This is a sample reply.',
+                    author: 'Guest',
+                    createdAt: new Date().toISOString(),
+                    votes: 2
+                }
+            ],
+            votes: {}
+        };
     }
 }
 
 function saveForumData() {
     console.log('Forum data saved');
-}
-
-function initializeSampleForums() {
-    if (forumData.forums.length === 0) {
-        const sampleForums = [
-            {
-                id: 1,
-                title: "General Discussion",
-                description: "General movie discussions and recommendations",
-                createdBy: "Admin",
-                createdAt: new Date().toISOString(),
-                threadCount: 0,
-                postCount: 0
-            },
-            {
-                id: 2,
-                title: "New Releases",
-                description: "Discuss the latest movies hitting theaters",
-                createdBy: "Admin",
-                createdAt: new Date().toISOString(),
-                threadCount: 0,
-                postCount: 0
-            },
-            {
-                id: 3,
-                title: "Classic Cinema",
-                description: "Celebrating timeless films and directors",
-                createdBy: "Admin",
-                createdAt: new Date().toISOString(),
-                threadCount: 0,
-                postCount: 0
-            }
-        ];
-
-        const sampleThreads = [
-            {
-                id: 1,
-                forumId: 1,
-                title: "Best Films of 2025 Discussion",
-                content: "What are your picks for the best films released so far this year? I'm really impressed with the diversity of storytelling we've seen.",
-                author: "FilmBuff2025",
-                createdAt: new Date(Date.now() - 86400000).toISOString(),
-                votes: 15,
-                commentCount: 234
-            },
-            {
-                id: 2,
-                forumId: 1,
-                title: "Underrated Horror Gems",
-                content: "Let's share some hidden horror gems that deserve more attention. I'll start with 'The Wailing' - absolutely terrifying Korean horror.",
-                author: "HorrorFan",
-                createdAt: new Date(Date.now() - 172800000).toISOString(),
-                votes: 8,
-                commentCount: 89
-            },
-            {
-                id: 3,
-                forumId: 3,
-                title: "Nolan's Visual Evolution",
-                content: "How has Christopher Nolan's visual style evolved from Following to his recent works? His use of practical effects continues to amaze.",
-                author: "CinemaStudent",
-                createdAt: new Date(Date.now() - 259200000).toISOString(),
-                votes: 22,
-                commentCount: 156
-            }
-        ];
-
-        const sampleComments = [
-            {
-                id: 1,
-                threadId: 1,
-                parentId: null,
-                content: "I think Dune: Part Two deserves a mention. The cinematography was absolutely stunning.",
-                author: "SciFiLover",
-                createdAt: new Date(Date.now() - 43200000).toISOString(),
-                votes: 12
-            },
-            {
-                id: 2,
-                threadId: 1,
-                parentId: 1,
-                content: "Totally agree! Greig Fraser's work on both Dune films has been phenomenal. The desert sequences were breathtaking.",
-                author: "FilmBuff2025",
-                createdAt: new Date(Date.now() - 21600000).toISOString(),
-                votes: 8
-            },
-            {
-                id: 3,
-                threadId: 2,
-                parentId: null,
-                content: "Have you seen 'His House'? It's a Netflix horror film that uses the horror genre to explore refugee experiences. Brilliant storytelling.",
-                author: "IndieWatcher",
-                createdAt: new Date(Date.now() - 86400000).toISOString(),
-                votes: 15
-            }
-        ];
-
-        forumData.forums = sampleForums;
-        forumData.threads = sampleThreads;
-        forumData.comments = sampleComments;
-        
-        forumData.forums.forEach(forum => {
-            forum.threadCount = forumData.threads.filter(t => t.forumId === forum.id).length;
-            forum.postCount = forumData.threads.filter(t => t.forumId === forum.id)
-                .reduce((sum, thread) => sum + thread.commentCount, 0);
-        });
-    }
 }
 
 function updateForumsList() {
@@ -257,18 +177,43 @@ function updateCommentsList(threadId) {
     const comments = forumData.comments.filter(c => c.threadId === threadId)
         .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
 
-    const commentsSection = document.getElementById('commentsSection');
-    if (!commentsSection) return;
-    
+    const commentsList = document.getElementById('commentsList');
+    if (!commentsList) return;
+
     if (comments.length === 0) {
-        commentsSection.innerHTML = '<p style="text-align: center; color: #999; padding: 2rem;">No comments yet. Be the first to comment!</p>';
+        commentsList.innerHTML = '<p style="text-align: center; color: #999; padding: 2rem;">No comments yet. Be the first to comment!</p>';
         return;
     }
 
-    const topLevelComments = comments.filter(c => !c.parentId);
-    const html = topLevelComments.map(comment => renderComment(comment, comments)).join('');
-    
-    commentsSection.innerHTML = html;
+    const html = comments.map(comment => {
+        const userVote = getUserVote('comment', comment.id);
+        return `
+            <div class="comment ${comment.parentId ? 'reply' : ''}">
+                <div class="comment-header">
+                    <span class="comment-author">${comment.author}</span>
+                    <span class="comment-time">${timeAgo(comment.createdAt)}</span>
+                </div>
+                <div class="comment-content">${comment.content.replace(/\n/g, '<br>')}</div>
+                <div class="comment-actions">
+                    <div class="comment-votes">
+                        <button class="vote-btn ${userVote === 'up' ? 'upvoted' : ''}" onclick="vote('comment', ${comment.id}, 'up', event)">▲</button>
+                        <div class="vote-count">${comment.votes || 0}</div>
+                        <button class="vote-btn ${userVote === 'down' ? 'downvoted' : ''}" onclick="vote('comment', ${comment.id}, 'down', event)">▼</button>
+                    </div>
+                    ${currentUser ? `<button class="reply-btn" onclick="showReplyForm(${comment.id})">Reply</button>` : ''}
+                </div>
+                <div id="replyForm-${comment.id}" class="comment-form hidden">
+                    <textarea id="replyText-${comment.id}" class="form-textarea" placeholder="Write your reply..."></textarea>
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" onclick="addReply(${comment.id})">Post Reply</button>
+                        <button class="btn btn-secondary" onclick="hideReplyForm(${comment.id})">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    commentsList.innerHTML = html;
 }
 
 function renderComment(comment, allComments, isReply = false) {

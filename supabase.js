@@ -1,4 +1,4 @@
-// supabase.js - Fixed Supabase configuration with proper initialization
+// supabase.js - Fixed Supabase configuration with proper initialization and added getThread method
 
 // Supabase configuration
 const SUPABASE_URL = 'https://jlsmvnfwjovggpqueurh.supabase.co';
@@ -11,7 +11,6 @@ let initializationPromise = null;
 
 // Initialize Supabase with better error handling
 async function initializeSupabase() {
-    // Return existing promise if already initializing
     if (initializationPromise) {
         return initializationPromise;
     }
@@ -20,7 +19,6 @@ async function initializeSupabase() {
         try {
             console.log('Initializing Supabase client...');
             
-            // Wait for the Supabase library to be available
             let attempts = 0;
             const maxAttempts = 50;
             
@@ -37,7 +35,6 @@ async function initializeSupabase() {
             
             const { createClient } = supabase;
             
-            // Create the Supabase client with additional configuration
             supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
                 auth: {
                     autoRefreshToken: true,
@@ -48,7 +45,6 @@ async function initializeSupabase() {
             
             console.log('Supabase client created, testing connection...');
             
-            // Test the connection with a simple query
             try {
                 const { data, error } = await supabaseClient.auth.getSession();
                 if (error && error.message !== 'Invalid Refresh Token: Refresh Token Not Found') {
@@ -65,7 +61,7 @@ async function initializeSupabase() {
         } catch (error) {
             console.error('Failed to initialize Supabase:', error);
             isSupabaseInitialized = false;
-            initializationPromise = null; // Reset so we can try again
+            initializationPromise = null;
             throw error;
         }
     })();
@@ -81,7 +77,6 @@ function waitForSupabase(timeoutMs = 15000) {
             return;
         }
         
-        // Set up timeout
         const timeout = setTimeout(() => {
             reject(new Error(`Supabase initialization timeout after ${timeoutMs}ms`));
         }, timeoutMs);
@@ -99,8 +94,7 @@ function waitForSupabase(timeoutMs = 15000) {
 
 // Enhanced authentication service with better error handling
 const authService = {
-    // Sign up new user
-        async signUp(email, password, username) {
+    async signUp(email, password, username) {
         try {
             console.log('Starting signup process...');
             await waitForSupabase(10000);
@@ -128,33 +122,6 @@ const authService = {
             
             console.log('Signup response:', JSON.stringify(data, null, 2));
             
-            // Create profile if user was created
-            if (data.user) {
-                try {
-                    console.log('Creating user profile for ID:', data.user.id);
-                    const { error: profileError } = await supabaseClient
-                        .from('profiles')
-                        .insert({
-                            id: data.user.id,
-                            username: username,
-                            display_name: username,
-                            created_at: new Date().toISOString(),
-                            updated_at: new Date().toISOString()
-                        });
-                    
-                    if (profileError) {
-                        console.error('Profile creation error:', JSON.stringify(profileError, null, 2));
-                        throw new Error(`Failed to create user profile: ${profileError.message}`);
-                    }
-                    console.log('Profile created successfully for user:', data.user.id);
-                } catch (profileErr) {
-                    console.error('Profile creation failed:', profileErr);
-                    throw profileErr;
-                }
-            } else {
-                console.warn('No user data returned from signup');
-            }
-            
             return { data, error: null };
         } catch (error) {
             console.error('Sign up error:', JSON.stringify(error, null, 2));
@@ -162,7 +129,6 @@ const authService = {
         }
     },
 
-    // Sign in user
     async signIn(email, password) {
         try {
             console.log('Starting signin process...');
@@ -192,7 +158,6 @@ const authService = {
         }
     },
 
-    // Sign out user
     async signOut() {
         try {
             console.log('Starting signout process...');
@@ -213,122 +178,142 @@ const authService = {
         }
     },
 
-    async ensureUserProfile() {
+    async getCurrentUser() {
     try {
-        const { data: { user } } = await supabaseClient.auth.getUser();
-        if (!user) throw new Error('Not authenticated');
+        console.log('Fetching current user...');
+        await waitForSupabase(10000);
         
-        const { data: profile, error } = await supabaseClient
-            .from('profiles')
-            .select('id')
-            .eq('id', user.id)
-            .single();
-        
-        if (error || !profile) {
-            console.log('Creating missing profile for user:', user.id);
-            const username = user.user_metadata?.username || user.email.split('@')[0];
-            const { error: insertError } = await supabaseClient
-                .from('profiles')
-                .insert({
-                    id: user.id,
-                    username: username,
-                    display_name: username,
-                    created_at: new Date().toISOString(),
-                    updated_at: new Date().toISOString()
-                });
-            if (insertError) {
-                console.error('Profile creation error:', insertError);
-                throw insertError;
-            }
-            console.log('Profile created successfully');
+        if (!supabaseClient) {
+            throw new Error('Supabase client not initialized');
         }
+        
+        // First, get the session (this doesn't throw if no session exists)
+        const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
+        
+        if (sessionError) {
+            console.error('Get session error:', sessionError);
+            throw sessionError;
+        }
+        
+        if (!session) {
+            console.log('No active session found');
+            return { user: null };
+        }
+        
+        // If session exists, get the full user
+        const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+        
+        if (userError) {
+            console.error('Get user error:', userError);
+            throw userError;
+        }
+        
+        if (!user) {
+            console.log('Session exists but no user found');
+            return { user: null };
+        }
+        
+        // Fetch profile with fallback
+        let profile = null;
+        try {
+            const { data: profileData, error: profileError } = await supabaseClient
+                .from('profiles')
+                .select('*')
+                .eq('id', user.id)
+                .single();
+            
+            if (profileError) {
+                console.warn('Profile fetch error:', profileError);
+            } else {
+                profile = profileData;
+            }
+        } catch (profileErr) {
+            console.warn('Failed to fetch profile:', profileErr);
+        }
+        
+        console.log('User fetched successfully');
+        return { user: { ...user, profile } };
     } catch (error) {
-        console.error('Error ensuring user profile:', error);
-        throw error;
+        console.error('Get current user error:', error);
+        return { user: null };
     }
 },
 
-    // Get current user
-    async getCurrentUser() {
-        try {
-            await waitForSupabase(5000);
-            
-            if (!supabaseClient) {
-                return { user: null, error: new Error('Supabase client not initialized') };
-            }
-            
-            const { data: { user }, error } = await supabaseClient.auth.getUser();
-            if (error) throw error;
-            
-            if (user) {
-                // Get profile data
-                try {
-                    const { data: profile, error: profileError } = await supabaseClient
-                        .from('profiles')
-                        .select('*')
-                        .eq('id', user.id)
-                        .single();
-                    
-                    if (profileError && !profileError.message.includes('No rows found')) {
-                        console.warn('Profile fetch warning:', profileError.message);
-                    }
-                    
-                    return { user: { ...user, profile: profile || null }, error: null };
-                } catch (profileErr) {
-                    console.warn('Profile fetch failed:', profileErr.message);
-                    return { user: { ...user, profile: null }, error: null };
-                }
-            }
-            
-            return { user: null, error: null };
-        } catch (error) {
-            console.error('Get user error:', error);
-            return { user: null, error };
-        }
-    },
-
-    // Listen to auth changes
     onAuthStateChange(callback) {
-        if (!isSupabaseInitialized || !supabaseClient) {
-            console.warn('Supabase not initialized for auth state change listener');
-            // Return a mock subscription that does nothing
-            return { 
-                data: { 
-                    subscription: {
-                        unsubscribe: () => {}
-                    }
-                }
-            };
+        try {
+            if (!supabaseClient) {
+                console.warn('Supabase client not initialized for auth state change');
+                return () => {};
+            }
+            
+            const { data: { subscription } } = supabaseClient.auth.onAuthStateChange((event, session) => {
+                callback(event, session);
+            });
+            
+            return () => subscription?.unsubscribe();
+        } catch (error) {
+            console.error('Auth state change subscription error:', error);
+            return () => {};
         }
-        return supabaseClient.auth.onAuthStateChange(callback);
     }
 };
 
-// Enhanced database service with fallback handling
+// Database service with fixed method syntax and added getThread
 const dbService = {
-    // Helper to check if Supabase is available
     async ensureSupabase() {
-        if (!isSupabaseInitialized) {
-            await waitForSupabase(5000);
+        if (isSupabaseInitialized && supabaseClient) {
+            return true;
         }
-        if (!supabaseClient) {
-            throw new Error('Database not available');
-        }
+        await initializeSupabase();
+        return true;
     },
 
-    // Forums
+    // In supabase.js, inside dbService
+async ensureUserProfile() {
+    try {
+        await this.ensureSupabase();
+        const { data: { user }, error } = await supabaseClient.auth.getUser();
+        if (error) {
+            if (error.name === 'AuthSessionMissingError') {
+                console.log('No authenticated user found, proceeding without profile');
+                return null; // Return null instead of throwing
+            }
+            console.error('Get current user error:', error);
+            throw error;
+        }
+        if (!user) {
+            console.log('No authenticated user found, proceeding without profile');
+            return null;
+        }
+
+        const { data: profile, error: profileError } = await supabaseClient
+            .from('profiles')
+            .select('*')
+            .eq('id', user.id)
+            .single();
+        
+        if (profileError) {
+            console.error('Get profile error:', profileError);
+            throw profileError;
+        }
+        
+        return profile;
+    } catch (error) {
+        console.error('Ensure user profile error:', error);
+        throw error; // Rethrow unexpected errors
+    }
+},
+
     async getForums() {
         try {
             await this.ensureSupabase();
-            
             const { data, error } = await supabaseClient
                 .from('forums')
                 .select(`
                     *,
-                    profiles!forums_created_by_fkey(username, display_name)
+                    profiles(display_name, username)
                 `)
-                .order('created_at', { ascending: true });
-            
+                .order('created_at', { ascending: false });
             if (error) throw error;
             return { data, error: null };
         } catch (error) {
@@ -340,20 +325,21 @@ const dbService = {
     async createForum(title, description) {
         try {
             await this.ensureSupabase();
-            await this.ensureUserProfile(); // Add this
+            await this.ensureUserProfile();
             const { data: { user } } = await supabaseClient.auth.getUser();
             if (!user) throw new Error('Not authenticated');
-            
+
             const { data, error } = await supabaseClient
                 .from('forums')
                 .insert({
                     title,
-                    description,
-                    created_by: user.id
+                    description: description || 'No description provided',
+                    created_by: user.id,
+                    created_at: new Date().toISOString()
                 })
                 .select()
                 .single();
-            
+
             if (error) throw error;
             return { data, error: null };
         } catch (error) {
@@ -365,16 +351,14 @@ const dbService = {
     async getThreads(forumId) {
         try {
             await this.ensureSupabase();
-            
             const { data, error } = await supabaseClient
                 .from('threads')
                 .select(`
                     *,
-                    profiles!threads_author_id_fkey(username, display_name)
+                    profiles(display_name, username)
                 `)
                 .eq('forum_id', forumId)
                 .order('created_at', { ascending: false });
-            
             if (error) throw error;
             return { data, error: null };
         } catch (error) {
@@ -383,42 +367,14 @@ const dbService = {
         }
     },
 
-    async createThread(forumId, title, content) {
-        try {
-            await this.ensureSupabase();
-            
-            const { data: { user } } = await supabaseClient.auth.getUser();
-            if (!user) throw new Error('Not authenticated');
-
-            const { data, error } = await supabaseClient
-                .from('threads')
-                .insert({
-                    forum_id: forumId,
-                    title,
-                    content,
-                    author_id: user.id
-                })
-                .select()
-                .single();
-            
-            if (error) throw error;
-            return { data, error: null };
-        } catch (error) {
-            console.error('Create thread error:', error);
-            return { data: null, error };
-        }
-    },
-
     async getThread(threadId) {
         try {
             await this.ensureSupabase();
-            
             const { data, error } = await supabaseClient
                 .from('threads')
                 .select(`
                     *,
-                    profiles!threads_author_id_fkey(username, display_name),
-                    forums(id, title)
+                    profiles(display_name, username)
                 `)
                 .eq('id', threadId)
                 .single();
@@ -431,19 +387,58 @@ const dbService = {
         }
     },
 
+    async createThread(forumId, title, content) {
+    try {
+        await this.ensureSupabase();
+        await this.ensureUserProfile();
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        if (!user) throw new Error('Not authenticated');
+        
+        // Insert the new thread
+        const { data, error } = await supabaseClient
+            .from('threads')
+            .insert({
+                forum_id: forumId,
+                title: title,
+                content: content,
+                author_id: user.id
+            })
+            .select()
+            .single();
+        if (error) throw error;
+
+        // Fetch current forum to get thread_count
+        const { data: forum, error: forumError } = await supabaseClient
+            .from('forums')
+            .select('thread_count')
+            .eq('id', forumId)
+            .single();
+        if (forumError) throw forumError;
+
+        // Update thread_count
+        await supabaseClient
+            .from('forums')
+            .update({ thread_count: (forum.thread_count || 0) + 1 })
+            .eq('id', forumId);
+
+        return { data, error: null };
+    } catch (error) {
+        console.error('Create thread error:', error);
+        return { data: null, error };
+    }
+},
+
     async getComments(threadId) {
         try {
             await this.ensureSupabase();
-            
             const { data, error } = await supabaseClient
                 .from('comments')
                 .select(`
                     *,
-                    profiles!comments_author_id_fkey(username, display_name)
+                    profiles(display_name, username)
                 `)
                 .eq('thread_id', threadId)
                 .order('created_at', { ascending: true });
-            
             if (error) throw error;
             return { data, error: null };
         } catch (error) {
@@ -452,87 +447,115 @@ const dbService = {
         }
     },
 
-    async createComment(threadId, content, parentId = null) {
-        try {
-            await this.ensureSupabase();
-            
-            const { data: { user } } = await supabaseClient.auth.getUser();
-            if (!user) throw new Error('Not authenticated');
+    // In supabase.js, inside the dbService object, add this method:
+async createComment(threadId, content, parentId = null) {
+    try {
+        await this.ensureSupabase();
+        await this.ensureUserProfile();
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        if (!user) throw new Error('Not authenticated');
 
-            const { data, error } = await supabaseClient
-                .from('comments')
-                .insert({
-                    thread_id: threadId,
-                    parent_id: parentId,
-                    content,
-                    author_id: user.id
-                })
-                .select()
-                .single();
-            
-            if (error) throw error;
-            return { data, error: null };
-        } catch (error) {
-            console.error('Create comment error:', error);
-            return { data: null, error };
-        }
-    },
+        const { data, error } = await supabaseClient
+            .from('comments')
+            .insert({
+                thread_id: threadId,
+                parent_id: parentId,
+                content: content,
+                author_id: user.id
+            })
+            .select()
+            .single();
+        if (error) throw error;
 
-    async vote(type, id, direction) {
-        try {
-            await this.ensureSupabase();
-            
-            const { data: { user } } = await supabaseClient.auth.getUser();
-            if (!user) throw new Error('Not authenticated');
+        // Update thread comment count
+        const { data: thread, error: threadError } = await supabaseClient
+            .from('threads')
+            .select('comment_count')
+            .eq('id', threadId)
+            .single();
+        if (threadError) throw threadError;
 
-            // Check if vote already exists
-            const { data: existingVote } = await supabaseClient
-                .from('votes')
-                .select('*')
-                .eq('user_id', user.id)
-                .eq('votable_type', type)
-                .eq('votable_id', id)
-                .single();
+        await supabaseClient
+            .from('threads')
+            .update({ comment_count: (thread.comment_count || 0) + 1 })
+            .eq('id', threadId);
 
-            let result;
-            if (existingVote) {
-                if (existingVote.vote_type === direction) {
-                    // Remove vote
-                    result = await supabaseClient
-                        .from('votes')
-                        .delete()
-                        .eq('id', existingVote.id);
-                } else {
-                    // Update vote
-                    result = await supabaseClient
-                        .from('votes')
-                        .update({ vote_type: direction })
-                        .eq('id', existingVote.id);
-                }
+        return { data, error: null };
+    } catch (error) {
+        console.error('Create comment error:', error);
+        return { data: null, error };
+    }
+},
+
+async voteOnContent(type, id, direction) {
+    try {
+        await this.ensureSupabase();
+        await this.ensureUserProfile();
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        if (!user) throw new Error('Not authenticated');
+
+        const votableType = type === 'thread' ? 'thread' : 'comment';
+
+        // Check for existing vote
+        const { data: existingVote, error: voteError } = await supabaseClient
+            .from('votes')
+            .select('*')
+            .eq('user_id', user.id)
+            .eq('votable_type', votableType)
+            .eq('votable_id', id)
+            .maybeSingle();
+
+        if (voteError) throw voteError;
+
+        let voteDelta = 0;
+        if (existingVote) {
+            if (existingVote.vote_type === direction) {
+                // Remove vote if same direction
+                await supabaseClient
+                    .from('votes')
+                    .delete()
+                    .eq('id', existingVote.id);
+                voteDelta = existingVote.vote_type === 'up' ? -1 : 1;
             } else {
-                // Create new vote
-                result = await supabaseClient
+                // Remove existing vote and apply new one
+                await supabaseClient
+                    .from('votes')
+                    .delete()
+                    .eq('id', existingVote.id);
+                await supabaseClient
                     .from('votes')
                     .insert({
                         user_id: user.id,
-                        votable_type: type,
+                        votable_type: votableType,
                         votable_id: id,
                         vote_type: direction
                     });
+                voteDelta = (existingVote.vote_type === 'up' ? -1 : 1) + (direction === 'up' ? 1 : -1);
             }
-
-            if (result.error) throw result.error;
-            return { data: result.data, error: null };
-        } catch (error) {
-            console.error('Vote error:', error);
-            return { data: null, error };
+        } else {
+            // Create new vote
+            await supabaseClient
+                .from('votes')
+                .insert({
+                    user_id: user.id,
+                    votable_type: votableType,
+                    votable_id: id,
+                    vote_type: direction
+                });
+            voteDelta = direction === 'up' ? 1 : -1;
         }
-    },
+
+        return { success: true, voteDelta, error: null };
+    } catch (error) {
+        console.error('Vote error:', error);
+        return { success: false, error };
+    }
+},
 
     async upsertMovie(movieData) {
         try {
             await this.ensureSupabase();
-            
+            console.log('Upserting movie ID:', movieData.id);
             const { data, error } = await supabaseClient
                 .from('movies')
                 .upsert({
@@ -545,21 +568,26 @@ const dbService = {
                     rating: parseFloat(movieData.rating) || null,
                     poster_url: movieData.poster,
                     overview: movieData.overview,
-                    tmdb_data: movieData
+                    tmdb_data: movieData,
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString()
                 }, { onConflict: 'id' });
-            
-            if (error) throw error;
+            if (error) {
+                console.error('Upsert movie error:', error);
+                throw error;
+            }
+            console.log('Movie upsert successful');
             return { data, error: null };
         } catch (error) {
-            console.error('Upsert movie error:', error);
+            console.error('Upsert movie failed:', error);
             return { data: null, error };
         }
     },
 
-        async toggleWatchedMovie(movieId, movieData) {
+    async toggleWatchedMovie(movieId, movieData) {
         try {
             await this.ensureSupabase();
-            await this.ensureUserProfile(); // Add this
+            await this.ensureUserProfile();
             const { data: { user } } = await supabaseClient.auth.getUser();
             if (!user) throw new Error('Not authenticated');
             await this.upsertMovie(movieData);
@@ -591,10 +619,10 @@ const dbService = {
         }
     },
 
-        async saveReview(movieId, movieData, rating, reviewText) {
+    async saveReview(movieId, movieData, rating, reviewText) {
         try {
             await this.ensureSupabase();
-            await this.ensureUserProfile(); // Add this
+            await this.ensureUserProfile();
             const { data: { user } } = await supabaseClient.auth.getUser();
             if (!user) throw new Error('Not authenticated');
             await this.upsertMovie(movieData);
@@ -617,7 +645,6 @@ const dbService = {
     async getUserWatchedMovies(userId) {
         try {
             await this.ensureSupabase();
-            
             const { data, error } = await supabaseClient
                 .from('user_watched_movies')
                 .select(`
@@ -638,7 +665,6 @@ const dbService = {
     async getUserReviews(userId) {
         try {
             await this.ensureSupabase();
-            
             const { data, error } = await supabaseClient
                 .from('user_reviews')
                 .select(`
@@ -659,7 +685,6 @@ const dbService = {
     async getMovieUserData(movieId, userId) {
         try {
             await this.ensureSupabase();
-            
             const [watchedResult, reviewResult] = await Promise.all([
                 supabaseClient
                     .from('user_watched_movies')

@@ -32,91 +32,89 @@ async function init() {
     }
 }
 
-// Safe forum data loading with fallback
 async function loadForumDataSafely() {
     try {
-        if (isSupabaseInitialized && currentUser) {
+        if (isSupabaseInitialized) {
+            console.log('Loading forum data from Supabase...');
             await loadForumDataFromSupabase();
         } else {
-            console.log('Using local forum data (Supabase not available or user not authenticated)');
-            initializeSampleForums();
+            console.error('Supabase not initialized, cannot load forum data');
+            forumData.forums = [];
+            forumData.threads = [];
+            forumData.comments = [];
             updateForumsList();
+            updatePopularThreads();
         }
     } catch (error) {
-        console.error('Error loading forum data, falling back to samples:', error);
-        initializeSampleForums();
+        console.error('Error loading forum data from Supabase:', error);
+        forumData.forums = [];
+        forumData.threads = [];
+        forumData.comments = [];
         updateForumsList();
+        updatePopularThreads();
     }
 }
 
+// In main.js
 async function loadForumDataFromSupabase() {
     try {
         // Load forums
         const { data: forums, error: forumsError } = await db.getForums();
-        if (!forumsError && forums) {
-            forumData.forums = forums.map(forum => ({
-                id: forum.id,
-                title: forum.title,
-                description: forum.description,
-                createdBy: forum.profiles?.display_name || forum.profiles?.username || 'Unknown',
-                createdAt: forum.created_at,
-                threadCount: forum.thread_count,
-                postCount: forum.post_count
-            }));
-        }
-        
-        // If no forums exist, create sample forums
-        if (forumData.forums.length === 0 && currentUser) {
-            await createSampleForums();
-        }
-        
-        // Load threads and comments for popular content
-        await loadPopularContent();
-        
-    } catch (error) {
-        console.error('Error loading forum data:', error);
-        // Fall back to sample data if there's an error
-        initializeSampleForums();
-    }
-    
-    updateForumsList();
-}
+        if (forumsError) throw forumsError;
+        forumData.forums = forums.map(forum => ({
+            id: forum.id,
+            title: forum.title,
+            description: forum.description,
+            createdBy: forum.profiles?.display_name || forum.profiles?.username || 'Anonymous',
+            createdAt: forum.created_at,
+            threadCount: forum.thread_count,
+            postCount: forum.post_count
+        }));
 
-async function createSampleForums() {
-    const sampleForums = [
-        {
-            title: "General Discussion",
-            description: "General movie discussions and recommendations"
-        },
-        {
-            title: "New Releases",
-            description: "Discuss the latest movies hitting theaters"
-        },
-        {
-            title: "Classic Cinema",
-            description: "Celebrating timeless films and directors"
+        // Load threads and comments for popular content
+        const allThreads = [];
+        for (const forum of forumData.forums) {
+            const { data: threads, error: threadsError } = await db.getThreads(forum.id);
+            if (threadsError) {
+                console.warn(`Error loading threads for forum ${forum.id}:`, threadsError);
+                continue;
+            }
+            allThreads.push(...threads.map(thread => ({
+                id: thread.id,
+                forumId: thread.forum_id,
+                title: thread.title,
+                content: thread.content,
+                author: thread.profiles?.display_name || thread.profiles?.username || 'Anonymous',
+                createdAt: thread.created_at,
+                votes: thread.votes || 0,
+                commentCount: thread.comment_count || 0
+            })));
         }
-    ];
-    
-    try {
-        for (const forum of sampleForums) {
-            const { data, error } = await db.createForum(forum.title, forum.description);
-            if (!error && data) {
-                forumData.forums.push({
-                    id: data.id,
-                    title: data.title,
-                    description: data.description,
-                    createdBy: currentUser.profile?.display_name || currentUser.profile?.username || 'User',
-                    createdAt: data.created_at,
-                    threadCount: 0,
-                    postCount: 0
-                });
+        forumData.threads = allThreads;
+
+        // Load comments for active thread if needed
+        if (currentThreadId) {
+            const { data: comments, error: commentsError } = await db.getComments(currentThreadId);
+            if (commentsError) {
+                console.warn(`Error loading comments for thread ${currentThreadId}:`, commentsError);
+            } else {
+                forumData.comments = comments.map(comment => ({
+                    id: comment.id,
+                    threadId: comment.thread_id,
+                    parentId: comment.parent_id,
+                    content: comment.content,
+                    author: comment.profiles?.display_name || comment.profiles?.username || 'Anonymous',
+                    createdAt: comment.created_at,
+                    votes: comment.votes || 0
+                }));
             }
         }
+
+        updateForumsList();
+        updatePopularThreads();
     } catch (error) {
-        console.error('Error creating sample forums:', error);
-        // Fall back to local samples
-        initializeSampleForums();
+        console.error('Error loading forum data from Supabase:', error);
+        throw error; // Let loadForumDataSafely handle the fallback
     }
 }
 
@@ -386,31 +384,58 @@ async function addReply(parentId) {
 }
 
 async function vote(type, id, direction, event) {
+    if (event) {
+        event.stopPropagation();
+    }
+
     if (!currentUser) {
         showAuthMessage('Please login to vote', true);
         showPage('auth');
         return;
     }
-    
-    if (event) {
-        event.stopPropagation();
-    }
-    
+
     try {
         if (isSupabaseInitialized) {
-            const { error } = await db.vote(type, id, direction);
+            const { success, voteDelta, error } = await db.voteOnContent(type, id, direction);
             if (error) throw error;
-            
-            // Refresh the current view to show updated votes
-            await refreshCurrentView();
+
+            if (success) {
+                // Update forumData immediately
+                if (type === 'thread') {
+                    const thread = forumData.threads.find(t => t.id === id);
+                    if (thread) {
+                        thread.votes = (thread.votes || 0) + voteDelta;
+                    }
+                } else if (type === 'comment') {
+                    const comment = forumData.comments.find(c => c.id === id);
+                    if (comment) {
+                        comment.votes = (comment.votes || 0) + voteDelta;
+                    }
+                }
+
+                // Update UI based on current page
+                if (currentThreadId) {
+                    if (document.getElementById('thread-detail-page').classList.contains('active')) {
+                        const thread = forumData.threads.find(t => t.id === currentThreadId);
+                        if (thread) {
+                            updateThreadDetail(thread);
+                            updateCommentsList(currentThreadId);
+                        }
+                    } else if (document.getElementById('forum-threads-page').classList.contains('active')) {
+                        updateThreadsList(currentForumId);
+                    }
+                }
+
+                // Update popular threads in sidebar
+                updatePopularThreads();
+            }
         } else {
-            // Use local fallback
             voteLocal(type, id, direction, event);
         }
-        
     } catch (error) {
-        console.error('Error voting:', error);
+        console.error('Vote failed:', error);
         alert('Failed to vote. Please try again.');
+        voteLocal(type, id, direction, event); // Fallback to local
     }
 }
 
@@ -481,31 +506,28 @@ async function loadThreadsForForum(forumId) {
 }
 
 async function openThread(threadId) {
-    currentThreadId = threadId;
-    
     try {
-        if (isSupabaseInitialized) {
-            const { data: thread, error } = await db.getThread(threadId);
-            if (error) throw error;
-            
-            const threadData = {
-                id: thread.id,
-                forumId: thread.forum_id,
-                title: thread.title,
-                content: thread.content,
-                author: thread.profiles?.display_name || thread.profiles?.username || 'Unknown',
-                createdAt: thread.created_at,
-                votes: thread.votes || 0,
-                commentCount: thread.comment_count || 0
-            };
-            
-            const forum = thread.forums;
-            currentForumId = thread.forum_id;
+        currentThreadId = threadId;
+        let threadData = null;
 
+        if (isSupabaseInitialized && currentUser) {
+            const { data, error } = await db.getThread(threadId);
+            if (error) throw error;
+            threadData = {
+                id: data.id,
+                forumId: data.forum_id,
+                title: data.title,
+                content: data.content,
+                author: data.profiles?.display_name || data.profiles?.username || 'Unknown',
+                createdAt: data.created_at,
+                votes: data.votes,
+                commentCount: data.comment_count
+            };
+            const forum = forumData.forums.find(f => f.id === data.forum_id);
+            currentForumId = forum ? forum.id : null;
             document.getElementById('currentThreadTitle').textContent = threadData.title;
-            document.getElementById('forumBreadcrumbLink').textContent = forum.title;
-            document.getElementById('forumBreadcrumbLink').onclick = () => showForumThreads(forum.id || currentForumId);
-            
+            document.getElementById('forumBreadcrumbLink').textContent = forum ? forum.title : 'Unknown Forum';
+            document.getElementById('forumBreadcrumbLink').onclick = () => showForumThreads(forum ? forum.id : currentForumId);
             updateThreadDetail(threadData);
             await loadAndDisplayComments(threadId);
         } else {
@@ -513,26 +535,42 @@ async function openThread(threadId) {
             const thread = forumData.threads.find(t => t.id === threadId);
             if (thread) {
                 const forum = forumData.forums.find(f => f.id === thread.forumId);
-                currentForumId = forum.id;
+                currentForumId = forum ? forum.id : null;
                 document.getElementById('currentThreadTitle').textContent = thread.title;
-                document.getElementById('forumBreadcrumbLink').textContent = forum.title;
+                document.getElementById('forumBreadcrumbLink').textContent = forum ? forum.title : 'Unknown Forum';
+                document.getElementById('forumBreadcrumbLink').onclick = () => showForumThreads(forum ? forum.id : currentForumId);
                 updateThreadDetail(thread);
+                updateCommentsList(threadId);
+            } else {
+                console.error('Thread not found:', threadId);
+                document.getElementById('currentThreadTitle').textContent = 'Thread Not Found';
+                document.getElementById('forumBreadcrumbLink').textContent = 'Forums';
+                document.getElementById('forumBreadcrumbLink').onclick = () => showForumThreads(currentForumId);
+                updateThreadDetail({ title: 'Thread Not Found', content: 'The requested thread could not be found.', author: 'System', createdAt: new Date().toISOString(), votes: 0, commentCount: 0 });
                 updateCommentsList(threadId);
             }
         }
-        
+
         showPage('thread-detail');
-        
     } catch (error) {
         console.error('Error opening thread:', error);
         // Fall back to local data
         const thread = forumData.threads.find(t => t.id === threadId);
         if (thread) {
             const forum = forumData.forums.find(f => f.id === thread.forumId);
-            currentForumId = forum.id;
+            currentForumId = forum ? forum.id : null;
             document.getElementById('currentThreadTitle').textContent = thread.title;
-            document.getElementById('forumBreadcrumbLink').textContent = forum.title;
+            document.getElementById('forumBreadcrumbLink').textContent = forum ? forum.title : 'Unknown Forum';
+            document.getElementById('forumBreadcrumbLink').onclick = () => showForumThreads(forum ? forum.id : currentForumId);
             updateThreadDetail(thread);
+            updateCommentsList(threadId);
+            showPage('thread-detail');
+        } else {
+            console.error('Thread not found in fallback:', threadId);
+            document.getElementById('currentThreadTitle').textContent = 'Thread Not Found';
+            document.getElementById('forumBreadcrumbLink').textContent = 'Forums';
+            document.getElementById('forumBreadcrumbLink').onclick = () => showForumThreads(currentForumId);
+            updateThreadDetail({ title: 'Thread Not Found', content: 'The requested thread could not be found.', author: 'System', createdAt: new Date().toISOString(), votes: 0, commentCount: 0 });
             updateCommentsList(threadId);
             showPage('thread-detail');
         }
@@ -549,26 +587,34 @@ function openThreadFromSidebar(threadId) {
 async function loadAndDisplayComments(threadId) {
     try {
         if (isSupabaseInitialized) {
+            console.log(`Fetching comments for thread ${threadId} from Supabase...`);
             const { data: comments, error } = await db.getComments(threadId);
-            if (error) throw error;
-            
+            if (error) {
+                console.warn(`Error loading comments from Supabase for thread ${threadId}:`, error);
+                // Fall back to local data
+                updateCommentsList(threadId);
+                return;
+            }
+
+            // Map comments to the expected format
             const commentsData = comments.map(comment => ({
                 id: comment.id,
                 threadId: comment.thread_id,
                 parentId: comment.parent_id,
                 content: comment.content,
-                author: comment.profiles?.display_name || comment.profiles?.username || 'Unknown',
+                author: comment.profiles?.display_name || comment.profiles?.username || 'Anonymous',
                 createdAt: comment.created_at,
                 votes: comment.votes || 0
             }));
-            
-            // Update forumData comments for this thread
+
+            // Update forumData.comments for this thread
             forumData.comments = forumData.comments.filter(c => c.threadId !== threadId);
             forumData.comments.push(...commentsData);
+        } else {
+            console.log('Supabase not initialized, using local comments data');
         }
-        
+
         updateCommentsList(threadId);
-        
     } catch (error) {
         console.error('Error loading comments:', error);
         updateCommentsList(threadId); // Show what we have locally
