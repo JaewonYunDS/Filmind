@@ -177,7 +177,7 @@ function updateCommentsList(threadId) {
     const comments = forumData.comments.filter(c => c.threadId === threadId)
         .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
 
-    const commentsList = document.getElementById('commentsList');
+    const commentsList = document.getElementById('commentsSection');
     if (!commentsList) return;
 
     if (comments.length === 0) {
